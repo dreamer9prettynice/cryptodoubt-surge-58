@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
 
-// Polyfill Buffer
-window.Buffer = Buffer;
+if (typeof window !== 'undefined') {
+  window.Buffer = Buffer;
+}
