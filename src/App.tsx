@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { BottomNav } from "./components/BottomNav";
 import Index from "./pages/Index";
 import Bets from "./pages/Bets";
@@ -16,17 +16,15 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-betting-dark">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/bets" element={<Bets />} />
-            <Route path="/create" element={<Create />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-          <BottomNav />
-        </div>
-      </BrowserRouter>
+      <div className="min-h-screen bg-betting-dark">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/bets" element={<Bets />} />
+          <Route path="/create" element={<Create />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+        <BottomNav />
+      </div>
     </TooltipProvider>
   </QueryClientProvider>
 );
