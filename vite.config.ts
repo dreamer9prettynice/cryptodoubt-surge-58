@@ -29,5 +29,10 @@ export default defineConfig(({ mode }) => ({
         global: 'globalThis'
       }
     }
-  }
+  },
+  build: {
+    rollupOptions: {
+      external: ['buffer'],
+    },
+  },
 }));
