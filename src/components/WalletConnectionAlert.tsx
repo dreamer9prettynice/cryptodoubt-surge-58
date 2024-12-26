@@ -5,10 +5,10 @@ export const WalletConnectionAlert = () => {
   return (
     <Alert variant="destructive" className="mb-6">
       <Wallet className="h-4 w-4" />
-      <AlertTitle>Wallet Connection Required</AlertTitle>
+      <AlertTitle>Connect Wallet to Create Bet</AlertTitle>
       <AlertDescription>
-        You must connect your TON wallet before creating a bet. 
-        Click the "Connect Wallet" button to proceed.
+        To create a bet, tap the "Create Bet" button. You'll be prompted to connect 
+        your TON wallet. Once connected, you can proceed with setting up your bet.
       </AlertDescription>
     </Alert>
   );
