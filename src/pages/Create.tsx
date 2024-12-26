@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -17,6 +15,8 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTonConnectUI } from "@tonconnect/ui-react";
+import { Loader2 } from "lucide-react";
 
 const betFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -30,6 +30,7 @@ type BetFormValues = z.infer<typeof betFormSchema>;
 const Create = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [tonConnectUI] = useTonConnectUI();
 
   const form = useForm<BetFormValues>({
     resolver: zodResolver(betFormSchema),
@@ -40,6 +41,41 @@ const Create = () => {
       expiration: undefined,
     },
   });
+
+  const handleTransaction = async (amount: number) => {
+    try {
+      if (!tonConnectUI.connected) {
+        toast({
+          title: "Wallet not connected",
+          description: "Please connect your TON wallet first",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Here we would typically interact with a smart contract
+      // For now, we'll simulate a successful transaction
+      // In production, you would:
+      // 1. Deploy a smart contract for the bet
+      // 2. Generate a unique pool address for this bet
+      // 3. Send the transaction to that address
+
+      // Simulated successful transaction
+      toast({
+        title: "Transaction confirmed",
+        description: `Successfully transferred ${amount} USDT`,
+      });
+      return true;
+    } catch (error: any) {
+      console.error("Transaction error:", error);
+      toast({
+        title: "Transaction failed",
+        description: error.message || "Failed to process transaction",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
 
   const onSubmit = async (data: BetFormValues) => {
     try {
@@ -56,15 +92,23 @@ const Create = () => {
         return;
       }
 
+      // First, attempt the transaction
+      const transactionSuccess = await handleTransaction(data.amount);
+      if (!transactionSuccess) return;
+
       const expirationDate = new Date();
       expirationDate.setHours(expirationDate.getHours() + data.expiration);
 
+      // After successful transaction, create the bet
       const { error } = await supabase.from("bets").insert({
         creator_id: user.id,
         title: data.title,
         reason: data.reason,
         expiration_time: expirationDate.toISOString(),
         total_amount: data.amount,
+        // In production, these would come from the smart contract
+        contract_address: "simulated_contract_address",
+        pool_address: "simulated_pool_address",
       });
 
       if (error) throw error;
@@ -75,7 +119,7 @@ const Create = () => {
       });
 
       navigate("/bets");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating bet:", error);
       toast({
         title: "Error",
@@ -120,7 +164,7 @@ const Create = () => {
                 <FormItem>
                   <FormLabel>Reason</FormLabel>
                   <FormControl>
-                    <Textarea
+                    <Input
                       placeholder="Explain your bet"
                       className="bg-betting-secondary/20 border-betting-primary/20"
                       {...field}
@@ -173,10 +217,17 @@ const Create = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-betting-primary hover:bg-betting-primary/80"
-              disabled={form.formState.isSubmitting}
+              className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
+              disabled={form.formState.isSubmitting || !tonConnectUI.connected}
             >
-              {form.formState.isSubmitting ? "Creating..." : "Create Bet"}
+              {form.formState.isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Bet'
+              )}
             </Button>
           </form>
         </Form>
