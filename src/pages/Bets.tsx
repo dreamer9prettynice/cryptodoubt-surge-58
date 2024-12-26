@@ -2,10 +2,14 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { BetParticipationModal } from "@/components/bet-participation/BetParticipationModal";
 
 const Bets = () => {
   const [tonConnectUI] = useTonConnectUI();
   const { toast } = useToast();
+  const [selectedBet, setSelectedBet] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const bets = [
     {
@@ -14,24 +18,14 @@ const Bets = () => {
       amount: "1,000,000 USDT",
       expiration: "24h remaining",
       participants: 12,
-      poolAddress: "EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N", // Example pool address
+      poolAddress: "EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N",
     },
     // Add more mock bets here
   ];
 
-  const handleBetParticipation = async (betId: number, poolAddress: string) => {
-    if (!tonConnectUI.connected) {
-      toast({
-        title: "Wallet Connection Required",
-        description: "Please connect your TON wallet to participate in this bet",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleBetParticipation = async (choice: string, amount: number) => {
     try {
       // Simulated transaction for now
-      // In production, this would interact with a smart contract
       toast({
         title: "Processing bet participation",
         description: "Please confirm the transaction in your wallet",
@@ -54,6 +48,11 @@ const Bets = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const openParticipationModal = (bet: any) => {
+    setSelectedBet(bet);
+    setIsModalOpen(true);
   };
 
   return (
@@ -82,21 +81,26 @@ const Bets = () => {
               </div>
               <div className="mt-4">
                 <Button
-                  onClick={() => handleBetParticipation(bet.id, bet.poolAddress)}
+                  onClick={() => openParticipationModal(bet)}
                   className="w-full bg-betting-primary hover:bg-betting-primary/80"
                 >
                   Participate in Bet
                 </Button>
-                <p className="text-xs text-center mt-2 text-betting-primary/80">
-                  {!tonConnectUI.connected 
-                    ? "Connect your TON wallet to participate in this bet"
-                    : "Click to participate in this bet"}
-                </p>
               </div>
             </motion.div>
           ))}
         </div>
       </motion.div>
+
+      {selectedBet && (
+        <BetParticipationModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          betTitle={selectedBet.title}
+          poolAmount={selectedBet.amount}
+          onParticipate={handleBetParticipation}
+        />
+      )}
     </div>
   );
 };
