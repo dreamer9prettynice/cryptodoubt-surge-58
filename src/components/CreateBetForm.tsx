@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 
-const betFormSchema = z.object({
+// Export the betFormSchema so it can be imported in other files
+export const betFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   reason: z.string().min(10, "Reason must be at least 10 characters"),
   amount: z.number().min(1, "Amount must be greater than 0"),
