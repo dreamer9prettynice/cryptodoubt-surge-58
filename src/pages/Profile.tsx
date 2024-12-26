@@ -106,16 +106,40 @@ const Profile = () => {
         transition={{ duration: 0.5 }}
         className="max-w-lg mx-auto"
       >
-        {!isLoggedIn ? (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-betting-primary to-betting-accent bg-clip-text text-transparent animate-glow">
-                Welcome Back
-              </h1>
-              <p className="text-betting-primary/60 mt-2">
-                Login to access your betting profile
-              </p>
-            </div>
+        <div className="space-y-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-betting-primary to-betting-accent bg-clip-text text-transparent animate-glow">
+              {isLoggedIn ? "Profile" : "Welcome Back"}
+            </h1>
+            <p className="text-betting-primary/60 mt-2">
+              {isLoggedIn
+                ? "Manage your betting profile"
+                : "Login to access your betting profile"}
+            </p>
+          </div>
+
+          {/* Wallet Connection Section - Always visible */}
+          <div className="backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
+            <Button
+              onClick={handleWalletAction}
+              disabled={isLoading}
+              className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Wallet className="h-4 w-4" />
+                  {tonWalletAddress
+                    ? `Connected: ${formatAddress(tonWalletAddress)}`
+                    : "Connect TON Wallet"}
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Login Section - Only visible when not logged in */}
+          {!isLoggedIn && (
             <div className="space-y-4 backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
@@ -150,35 +174,22 @@ const Profile = () => {
                 )}
               </Button>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-betting-secondary/20 rounded-full mx-auto mb-4 border-2 border-betting-primary/20 relative group">
-                <Upload className="w-8 h-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-betting-primary/50 group-hover:text-betting-primary transition-colors" />
+          )}
+
+          {/* Profile Section - Only visible when logged in */}
+          {isLoggedIn && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="w-24 h-24 bg-betting-secondary/20 rounded-full mx-auto mb-4 border-2 border-betting-primary/20 relative group">
+                  <Upload className="w-8 h-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-betting-primary/50 group-hover:text-betting-primary transition-colors" />
+                </div>
+                <h2 className="text-xl font-bold text-betting-primary">
+                  {username}
+                </h2>
               </div>
-              <h2 className="text-xl font-bold text-betting-primary">{username}</h2>
             </div>
-            <div className="backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
-              <Button
-                onClick={handleWalletAction}
-                disabled={isLoading}
-                className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Wallet className="h-4 w-4" />
-                    {tonWalletAddress
-                      ? `Connected: ${formatAddress(tonWalletAddress)}`
-                      : "Connect TON Wallet"}
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </motion.div>
     </div>
   );
