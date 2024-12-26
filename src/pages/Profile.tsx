@@ -7,7 +7,7 @@ import { useTonConnectUI } from "@tonconnect/ui-react";
 import { Address } from "@ton/core";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Wallet } from "lucide-react";
 
 const Profile = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -163,14 +163,17 @@ const Profile = () => {
               <Button
                 onClick={handleWalletAction}
                 disabled={isLoading}
-                className="w-full bg-betting-primary hover:bg-betting-primary/80"
+                className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
               >
                 {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : tonWalletAddress ? (
-                  `Connected: ${formatAddress(tonWalletAddress)}`
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  "Connect TON Wallet"
+                  <>
+                    <Wallet className="h-4 w-4" />
+                    {tonWalletAddress
+                      ? `Connected: ${formatAddress(tonWalletAddress)}`
+                      : "Connect TON Wallet"}
+                  </>
                 )}
               </Button>
             </div>
