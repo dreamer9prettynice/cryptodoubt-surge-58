@@ -11,7 +11,8 @@ import { Loader2, Upload, Wallet } from "lucide-react";
 
 const Profile = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [email, setEmail] = useState(""); // Changed from username to email
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [tonConnectUI] = useTonConnectUI();
   const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(null);
@@ -67,48 +68,53 @@ const Profile = () => {
     }
   };
 
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
     setIsLoading(true);
     try {
-      // First check if user exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', email)
-        .single();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-      if (checkError) {
-        // If user doesn't exist, sign them up
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-        });
+      if (error) throw error;
 
-        if (signUpError) throw signUpError;
-
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account.",
-        });
-      } else {
-        // If user exists, try to sign in
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) throw signInError;
-
-        setIsLoggedIn(true);
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
-        });
-      }
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      });
+      
+      // Switch back to sign in view
+      setIsSignUp(false);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to authenticate. Please try again.",
+        description: error.message || "Failed to create account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      setIsLoggedIn(true);
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sign in. Please check your credentials.",
         variant: "destructive",
       });
     } finally {
@@ -132,16 +138,18 @@ const Profile = () => {
         <div className="space-y-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-betting-primary to-betting-accent bg-clip-text text-transparent animate-glow">
-              {isLoggedIn ? "Profile" : "Welcome Back"}
+              {isLoggedIn ? "Profile" : isSignUp ? "Create Account" : "Welcome Back"}
             </h1>
             <p className="text-betting-primary/60 mt-2">
               {isLoggedIn
                 ? "Manage your betting profile"
+                : isSignUp
+                ? "Sign up to start betting"
                 : "Login to access your betting profile"}
             </p>
           </div>
 
-          {/* Wallet Connection Section - Always visible */}
+          {/* Wallet Connection Section */}
           <div className="backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
             <Button
               onClick={handleWalletAction}
@@ -161,7 +169,7 @@ const Profile = () => {
             </Button>
           </div>
 
-          {/* Login Section - Only visible when not logged in */}
+          {/* Authentication Section */}
           {!isLoggedIn && (
             <div className="space-y-4 backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
               <div className="space-y-2">
@@ -187,20 +195,30 @@ const Profile = () => {
                 />
               </div>
               <Button
-                onClick={handleLogin}
+                onClick={isSignUp ? handleSignUp : handleSignIn}
                 disabled={isLoading}
                 className="w-full bg-betting-primary hover:bg-betting-primary/80"
               >
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  "Login"
+                  isSignUp ? "Sign Up" : "Sign In"
                 )}
               </Button>
+              <div className="text-center">
+                <button
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-betting-primary/60 hover:text-betting-primary text-sm"
+                >
+                  {isSignUp
+                    ? "Already have an account? Sign In"
+                    : "Don't have an account? Sign Up"}
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Profile Section - Only visible when logged in */}
+          {/* Profile Section */}
           {isLoggedIn && (
             <div className="space-y-6">
               <div className="text-center">
