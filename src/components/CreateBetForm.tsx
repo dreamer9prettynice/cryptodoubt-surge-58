@@ -1,5 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
-import { useTonConnectUI } from "@tonconnect/ui-react";
-import { useToast } from "@/hooks/use-toast";
 
+// Export the betFormSchema so it can be imported in other files
 export const betFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   reason: z.string().min(10, "Reason must be at least 10 characters"),
@@ -22,16 +21,15 @@ export const betFormSchema = z.object({
   expiration: z.number().min(1, "Expiration must be at least 1 hour"),
 });
 
-export type BetFormValues = z.infer<typeof betFormSchema>;
+type BetFormValues = z.infer<typeof betFormSchema>;
 
 interface CreateBetFormProps {
   onSubmit: (data: BetFormValues) => Promise<void>;
+  isWalletConnected: boolean;
+  isSubmitting: boolean;
 }
 
-export function CreateBetForm({ onSubmit }: CreateBetFormProps) {
-  const { toast } = useToast();
-  const [tonConnectUI] = useTonConnectUI();
-
+export const CreateBetForm = ({ onSubmit, isWalletConnected, isSubmitting }: CreateBetFormProps) => {
   const form = useForm<BetFormValues>({
     resolver: zodResolver(betFormSchema),
     defaultValues: {
@@ -42,22 +40,9 @@ export function CreateBetForm({ onSubmit }: CreateBetFormProps) {
     },
   });
 
-  const handleSubmit = async (data: BetFormValues) => {
-    if (!tonConnectUI.connected) {
-      toast({
-        title: "Wallet Connection Required",
-        description: "Please connect your TON wallet to create a bet",
-        variant: "destructive",
-      });
-      tonConnectUI.openModal();
-      return;
-    }
-    await onSubmit(data);
-  };
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"
@@ -137,8 +122,9 @@ export function CreateBetForm({ onSubmit }: CreateBetFormProps) {
         <Button 
           type="submit" 
           className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
+          disabled={isSubmitting || !isWalletConnected}
         >
-          {form.formState.isSubmitting ? (
+          {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
               Creating...
@@ -150,4 +136,4 @@ export function CreateBetForm({ onSubmit }: CreateBetFormProps) {
       </form>
     </Form>
   );
-}
+};
