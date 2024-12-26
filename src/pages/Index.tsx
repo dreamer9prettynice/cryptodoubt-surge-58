@@ -10,10 +10,10 @@ const Index = () => {
         className="max-w-lg mx-auto space-y-6"
       >
         <h1 className="text-4xl font-bold text-betting-primary">
-          Crypto Betting Platform
+          Choose to bet
         </h1>
         <p className="text-gray-300">
-          Welcome to the next generation of crypto betting. Create or join bets,
+          You choose how and on what to bet. Create or join bets,
           challenge other players, and win big with TON blockchain integration.
         </p>
         <div className="bg-betting-secondary/20 backdrop-blur-lg rounded-lg p-6 border border-betting-primary/20">
