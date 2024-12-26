@@ -20,16 +20,16 @@ const Bets = () => {
   ];
 
   const handleBetParticipation = async (betId: number, poolAddress: string) => {
-    try {
-      if (!tonConnectUI.connected) {
-        toast({
-          title: "Wallet not connected",
-          description: "Please connect your TON wallet to participate in bets",
-          variant: "destructive",
-        });
-        return;
-      }
+    if (!tonConnectUI.connected) {
+      toast({
+        title: "Wallet Connection Required",
+        description: "Please connect your TON wallet to participate in this bet",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    try {
       // Simulated transaction for now
       // In production, this would interact with a smart contract
       toast({
@@ -80,19 +80,18 @@ const Bets = () => {
                 <p>Time left: {bet.expiration}</p>
                 <p>Participants: {bet.participants}</p>
               </div>
-              <div className="mt-4 space-y-2">
+              <div className="mt-4">
                 <Button
                   onClick={() => handleBetParticipation(bet.id, bet.poolAddress)}
                   className="w-full bg-betting-primary hover:bg-betting-primary/80"
-                  disabled={!tonConnectUI.connected}
                 >
                   Participate in Bet
                 </Button>
-                {!tonConnectUI.connected && (
-                  <p className="text-xs text-center text-betting-primary/80">
-                    Connect your TON wallet to participate in bets
-                  </p>
-                )}
+                <p className="text-xs text-center mt-2 text-betting-primary/80">
+                  {!tonConnectUI.connected 
+                    ? "Connect your TON wallet to participate in this bet"
+                    : "Click to participate in this bet"}
+                </p>
               </div>
             </motion.div>
           ))}
