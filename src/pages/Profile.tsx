@@ -5,13 +5,13 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect, useCallback } from "react";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { Address } from "@ton/core";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload, Wallet } from "lucide-react";
 
 const Profile = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState(""); // Changed from username to email
   const [password, setPassword] = useState("");
   const [tonConnectUI] = useTonConnectUI();
   const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(null);
@@ -70,22 +70,45 @@ const Profile = () => {
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: username,
-        password: password,
-      });
+      // First check if user exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', email)
+        .single();
 
-      if (error) throw error;
+      if (checkError) {
+        // If user doesn't exist, sign them up
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      setIsLoggedIn(true);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-    } catch (error) {
+        if (signUpError) throw signUpError;
+
+        toast({
+          title: "Account created!",
+          description: "Please check your email to verify your account.",
+        });
+      } else {
+        // If user exists, try to sign in
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) throw signInError;
+
+        setIsLoggedIn(true);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to log in. Please check your credentials.",
+        description: error.message || "Failed to authenticate. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -142,12 +165,13 @@ const Profile = () => {
           {!isLoggedIn && (
             <div className="space-y-4 backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter username"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   className="bg-betting-secondary/20 border-betting-primary/20"
                 />
               </div>
@@ -184,7 +208,7 @@ const Profile = () => {
                   <Upload className="w-8 h-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-betting-primary/50 group-hover:text-betting-primary transition-colors" />
                 </div>
                 <h2 className="text-xl font-bold text-betting-primary">
-                  {username}
+                  {email}
                 </h2>
               </div>
             </div>
