@@ -16,7 +16,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTonConnectUI } from "@tonconnect/ui-react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const betFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -46,30 +47,23 @@ const Create = () => {
     try {
       if (!tonConnectUI.connected) {
         toast({
-          title: "Wallet not connected",
-          description: "Please connect your TON wallet first",
+          title: "Wallet Not Connected",
+          description: "Please connect your TON wallet to create a bet",
           variant: "destructive",
         });
         return false;
       }
 
-      // Here we would typically interact with a smart contract
-      // For now, we'll simulate a successful transaction
-      // In production, you would:
-      // 1. Deploy a smart contract for the bet
-      // 2. Generate a unique pool address for this bet
-      // 3. Send the transaction to that address
-
-      // Simulated successful transaction
+      // Simulated transaction logic
       toast({
-        title: "Transaction confirmed",
-        description: `Successfully transferred ${amount} USDT`,
+        title: "Transaction Confirmed",
+        description: `Successfully prepared ${amount} USDT for betting`,
       });
       return true;
     } catch (error: any) {
       console.error("Transaction error:", error);
       toast({
-        title: "Transaction failed",
+        title: "Transaction Failed",
         description: error.message || "Failed to process transaction",
         variant: "destructive",
       });
@@ -79,6 +73,16 @@ const Create = () => {
 
   const onSubmit = async (data: BetFormValues) => {
     try {
+      // Wallet connection check
+      if (!tonConnectUI.connected) {
+        toast({
+          title: "Wallet Required",
+          description: "You must connect your TON wallet to create a bet",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -106,7 +110,6 @@ const Create = () => {
         reason: data.reason,
         expiration_time: expirationDate.toISOString(),
         total_amount: data.amount,
-        // In production, these would come from the smart contract
         contract_address: "simulated_contract_address",
         pool_address: "simulated_pool_address",
       });
@@ -137,6 +140,18 @@ const Create = () => {
         className="max-w-lg mx-auto"
       >
         <h1 className="text-2xl font-bold mb-6">Create New Bet</h1>
+        
+        {!tonConnectUI.connected && (
+          <Alert variant="destructive" className="mb-6">
+            <Wallet className="h-4 w-4" />
+            <AlertTitle>Wallet Connection Required</AlertTitle>
+            <AlertDescription>
+              You must connect your TON wallet before creating a bet. 
+              Click the "Connect Wallet" button to proceed.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
