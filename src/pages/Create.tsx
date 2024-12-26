@@ -1,80 +1,23 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useTonConnectUI } from "@tonconnect/ui-react";
-import { Loader2, Wallet } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { WalletConnectionAlert } from "@/components/WalletConnectionAlert";
+import { CreateBetForm } from "@/components/CreateBetForm";
+import { useWalletTransaction } from "@/hooks/use-wallet-transaction";
+import type { z } from "zod";
 
-const betFormSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  reason: z.string().min(10, "Reason must be at least 10 characters"),
-  amount: z.number().min(1, "Amount must be greater than 0"),
-  expiration: z.number().min(1, "Expiration must be at least 1 hour"),
-});
-
-type BetFormValues = z.infer<typeof betFormSchema>;
+type BetFormValues = z.infer<typeof import("@/components/CreateBetForm").betFormSchema>;
 
 const Create = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [tonConnectUI] = useTonConnectUI();
-
-  const form = useForm<BetFormValues>({
-    resolver: zodResolver(betFormSchema),
-    defaultValues: {
-      title: "",
-      reason: "",
-      amount: undefined,
-      expiration: undefined,
-    },
-  });
-
-  const handleTransaction = async (amount: number) => {
-    try {
-      if (!tonConnectUI.connected) {
-        toast({
-          title: "Wallet Not Connected",
-          description: "Please connect your TON wallet to create a bet",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      // Simulated transaction logic
-      toast({
-        title: "Transaction Confirmed",
-        description: `Successfully prepared ${amount} USDT for betting`,
-      });
-      return true;
-    } catch (error: any) {
-      console.error("Transaction error:", error);
-      toast({
-        title: "Transaction Failed",
-        description: error.message || "Failed to process transaction",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
+  const { handleTransaction, isWalletConnected } = useWalletTransaction();
 
   const onSubmit = async (data: BetFormValues) => {
     try {
       // Wallet connection check
-      if (!tonConnectUI.connected) {
+      if (!isWalletConnected) {
         toast({
           title: "Wallet Required",
           description: "You must connect your TON wallet to create a bet",
@@ -141,111 +84,13 @@ const Create = () => {
       >
         <h1 className="text-2xl font-bold mb-6">Create New Bet</h1>
         
-        {!tonConnectUI.connected && (
-          <Alert variant="destructive" className="mb-6">
-            <Wallet className="h-4 w-4" />
-            <AlertTitle>Wallet Connection Required</AlertTitle>
-            <AlertDescription>
-              You must connect your TON wallet before creating a bet. 
-              Click the "Connect Wallet" button to proceed.
-            </AlertDescription>
-          </Alert>
-        )}
+        {!isWalletConnected && <WalletConnectionAlert />}
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter bet title"
-                      className="bg-betting-secondary/20 border-betting-primary/20"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Reason</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Explain your bet"
-                      className="bg-betting-secondary/20 border-betting-primary/20"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount (USDT)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter bet amount"
-                      className="bg-betting-secondary/20 border-betting-primary/20"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="expiration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Expiration (hours)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter expiration time"
-                      className="bg-betting-secondary/20 border-betting-primary/20"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button 
-              type="submit" 
-              className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
-              disabled={form.formState.isSubmitting || !tonConnectUI.connected}
-            >
-              {form.formState.isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create Bet'
-              )}
-            </Button>
-          </form>
-        </Form>
+        <CreateBetForm 
+          onSubmit={onSubmit}
+          isWalletConnected={isWalletConnected}
+          isSubmitting={false}
+        />
       </motion.div>
     </div>
   );
