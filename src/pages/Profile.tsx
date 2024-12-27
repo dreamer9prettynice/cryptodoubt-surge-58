@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload, Wallet } from "lucide-react";
 import { BettingHistory } from "@/components/profile/BettingHistory";
+import { useQuery } from "@tanstack/react-query";
 
 const Profile = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,6 +20,15 @@ const Profile = () => {
   const [tonWalletAddress, setTonWalletAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Fetch user data using React Query
+  const { data: userData } = useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      return data.user;
+    },
+  });
 
   const handleWalletConnection = useCallback((address: string) => {
     setTonWalletAddress(address);
@@ -231,7 +241,7 @@ const Profile = () => {
             </div>
             
             {/* Add Betting History Component */}
-            <BettingHistory userId={supabase.auth.getUser()?.data.user?.id || ""} />
+            {userData && <BettingHistory userId={userData.id} />}
           </div>
         )}
       </motion.div>
