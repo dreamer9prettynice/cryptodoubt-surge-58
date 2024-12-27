@@ -1,5 +1,8 @@
 import { BettingContract, BettingConfig } from './BettingContract';
-import { Address, toNano } from '@ton/core';
+import { Address, toNano, Cell, beginCell } from '@ton/core';
+
+// Contract code (this would be your actual contract code in production)
+const contractCode = Cell.fromBoc(Buffer.from('b5ee9c7241010101001f000114ff00f4a413f4bcf2c80b0102016202030202cc04050201200d0e03774801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54e0508010c8cb055003cf1601cf16ccc922c8cb0112cb0bcb1fcb3f226c220202cd06070201200809007801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54007801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54008801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54002012010110201200b0c00e801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed5400e801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54', 'hex'))[0];
 
 export const createBettingContract = async (config: {
     betId: string;
@@ -16,13 +19,15 @@ export const createBettingContract = async (config: {
         creatorAddress: Address.parse(config.creatorAddress)
     };
 
-    // In a real implementation, you would:
-    // 1. Deploy the contract to TON blockchain
-    // 2. Return the contract instance and address
-    // This is a simplified version
+    const contract = BettingContract.createForDeploy(
+        contractCode,
+        bettingConfig
+    );
+
     return {
-        contractAddress: "EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N",
-        config: bettingConfig
+        contractAddress: contract.address.toString(),
+        config: bettingConfig,
+        contract
     };
 };
 
@@ -31,24 +36,48 @@ export const participateInBet = async (
     amount: number,
     choice: 'yes' | 'no'
 ) => {
-    // In a real implementation, you would:
-    // 1. Connect to the contract at the given address
-    // 2. Send the bet transaction
+    const contract = new BettingContract(
+        Address.parse(contractAddress)
+    );
+
+    // In production, you would:
+    // 1. Connect to actual TON provider
+    // 2. Send the transaction
     // This is a simplified version
     console.log(`Participating in bet at ${contractAddress} with ${amount} TON, choice: ${choice}`);
     return true;
 };
 
 export const getBetStatus = async (contractAddress: string) => {
-    // In a real implementation, you would:
-    // 1. Connect to the contract
-    // 2. Get the current state
+    const contract = new BettingContract(
+        Address.parse(contractAddress)
+    );
+
+    // In production, you would:
+    // 1. Connect to actual TON provider
+    // 2. Get the contract state
     // This is a simplified version
     return {
-        totalAmount: "1000000",
-        yesAmount: "600000",
-        noAmount: "400000",
-        status: "active",
+        totalAmount: toNano('1000000'),
+        yesAmount: toNano('600000'),
+        noAmount: toNano('400000'),
+        status: 'active',
         expirationTime: Date.now() + 86400000 // 24 hours from now
     };
+};
+
+export const resolveBet = async (
+    contractAddress: string,
+    outcome: 'yes' | 'no'
+) => {
+    const contract = new BettingContract(
+        Address.parse(contractAddress)
+    );
+
+    // In production, you would:
+    // 1. Connect to actual TON provider
+    // 2. Send resolve transaction
+    // This is a simplified version
+    console.log(`Resolving bet at ${contractAddress} with outcome: ${outcome}`);
+    return true;
 };

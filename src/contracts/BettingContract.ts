@@ -1,4 +1,14 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
+import { 
+    Address, 
+    beginCell, 
+    Cell, 
+    Contract, 
+    contractAddress, 
+    ContractProvider, 
+    Sender, 
+    SendMode,
+    toNano 
+} from '@ton/core';
 
 export type BettingConfig = {
     betId: string;
@@ -16,8 +26,8 @@ export class BettingContract implements Contract {
 
     static createForDeploy(code: Cell, initialData: BettingConfig): BettingContract {
         const data = beginCell()
-            .storeString(initialData.betId)
-            .storeString(initialData.title)
+            .storeBigString(initialData.betId)
+            .storeBigString(initialData.title)
             .storeCoins(initialData.amount)
             .storeUint(initialData.expirationTime, 64)
             .storeAddress(initialData.creatorAddress)
@@ -27,8 +37,9 @@ export class BettingContract implements Contract {
 
     async sendDeploy(provider: ContractProvider, via: Sender) {
         await provider.internal(via, {
-            value: "0.01", // Initial balance for contract
-            bounce: false
+            value: toNano('0.05'), // Initial balance for contract
+            bounce: false,
+            body: beginCell().endCell(),
         });
     }
 
@@ -41,11 +52,37 @@ export class BettingContract implements Contract {
         }
     ) {
         await provider.internal(via, {
-            value: opts.amount.toString(),
+            value: opts.amount,
             bounce: true,
             body: beginCell()
                 .storeUint(1, 32) // op code for betting
-                .storeString(opts.choice)
+                .storeBigString(opts.choice)
+                .endCell()
+        });
+    }
+
+    async getStatus(provider: ContractProvider) {
+        const { stack } = await provider.get('get_status', []);
+        return {
+            totalAmount: stack.readBigNumber(),
+            yesAmount: stack.readBigNumber(),
+            noAmount: stack.readBigNumber(),
+            status: stack.readString(),
+            expirationTime: stack.readNumber()
+        };
+    }
+
+    async resolveOutcome(
+        provider: ContractProvider,
+        via: Sender,
+        outcome: 'yes' | 'no'
+    ) {
+        await provider.internal(via, {
+            value: toNano('0.05'),
+            bounce: true,
+            body: beginCell()
+                .storeUint(2, 32) // op code for resolving
+                .storeBigString(outcome)
                 .endCell()
         });
     }
