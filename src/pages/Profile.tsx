@@ -8,6 +8,7 @@ import { Address } from "@ton/core";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload, Wallet } from "lucide-react";
+import { BettingHistory } from "@/components/profile/BettingHistory";
 
 const Profile = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -133,105 +134,106 @@ const Profile = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-lg mx-auto"
+        className="max-w-lg mx-auto space-y-6"
       >
-        <div className="space-y-6">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-betting-primary to-betting-accent bg-clip-text text-transparent animate-glow">
-              {isLoggedIn ? "Profile" : isSignUp ? "Create Account" : "Welcome Back"}
-            </h1>
-            <p className="text-betting-primary/60 mt-2">
-              {isLoggedIn
-                ? "Manage your betting profile"
-                : isSignUp
-                ? "Sign up to start betting"
-                : "Login to access your betting profile"}
-            </p>
-          </div>
+        <div className="text-center">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-betting-primary to-betting-accent bg-clip-text text-transparent animate-glow">
+            {isLoggedIn ? "Profile" : isSignUp ? "Create Account" : "Welcome Back"}
+          </h1>
+          <p className="text-betting-primary/60 mt-2">
+            {isLoggedIn
+              ? "Manage your betting profile"
+              : isSignUp
+              ? "Sign up to start betting"
+              : "Login to access your betting profile"}
+          </p>
+        </div>
 
-          {/* Wallet Connection Section */}
-          <div className="backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
+        {/* Wallet Connection Section */}
+        <div className="backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
+          <Button
+            onClick={handleWalletAction}
+            disabled={isLoading}
+            className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Wallet className="h-4 w-4" />
+                {tonWalletAddress
+                  ? `Connected: ${formatAddress(tonWalletAddress)}`
+                  : "Connect TON Wallet"}
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Authentication Section */}
+        {!isLoggedIn && (
+          <div className="space-y-4 backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="bg-betting-secondary/20 border-betting-primary/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                className="bg-betting-secondary/20 border-betting-primary/20"
+              />
+            </div>
             <Button
-              onClick={handleWalletAction}
+              onClick={isSignUp ? handleSignUp : handleSignIn}
               disabled={isLoading}
-              className="w-full bg-betting-primary hover:bg-betting-primary/80 flex items-center justify-center gap-2"
+              className="w-full bg-betting-primary hover:bg-betting-primary/80"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <Wallet className="h-4 w-4" />
-                  {tonWalletAddress
-                    ? `Connected: ${formatAddress(tonWalletAddress)}`
-                    : "Connect TON Wallet"}
-                </>
+                isSignUp ? "Sign Up" : "Sign In"
               )}
             </Button>
-          </div>
-
-          {/* Authentication Section */}
-          {!isLoggedIn && (
-            <div className="space-y-4 backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="bg-betting-secondary/20 border-betting-primary/20"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  className="bg-betting-secondary/20 border-betting-primary/20"
-                />
-              </div>
-              <Button
-                onClick={isSignUp ? handleSignUp : handleSignIn}
-                disabled={isLoading}
-                className="w-full bg-betting-primary hover:bg-betting-primary/80"
+            <div className="text-center">
+              <button
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-betting-primary/60 hover:text-betting-primary text-sm"
               >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  isSignUp ? "Sign Up" : "Sign In"
-                )}
-              </Button>
-              <div className="text-center">
-                <button
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-betting-primary/60 hover:text-betting-primary text-sm"
-                >
-                  {isSignUp
-                    ? "Already have an account? Sign In"
-                    : "Don't have an account? Sign Up"}
-                </button>
-              </div>
+                {isSignUp
+                  ? "Already have an account? Sign In"
+                  : "Don't have an account? Sign Up"}
+              </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Profile Section */}
-          {isLoggedIn && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-betting-secondary/20 rounded-full mx-auto mb-4 border-2 border-betting-primary/20 relative group">
-                  <Upload className="w-8 h-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-betting-primary/50 group-hover:text-betting-primary transition-colors" />
-                </div>
-                <h2 className="text-xl font-bold text-betting-primary">
-                  {email}
-                </h2>
+        {/* Profile Section */}
+        {isLoggedIn && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-betting-secondary/20 rounded-full mx-auto mb-4 border-2 border-betting-primary/20 relative group">
+                <Upload className="w-8 h-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-betting-primary/50 group-hover:text-betting-primary transition-colors" />
               </div>
+              <h2 className="text-xl font-bold text-betting-primary">
+                {email}
+              </h2>
             </div>
-          )}
-        </div>
+            
+            {/* Add Betting History Component */}
+            <BettingHistory userId={supabase.auth.getUser()?.data.user?.id || ""} />
+          </div>
+        )}
       </motion.div>
     </div>
   );
