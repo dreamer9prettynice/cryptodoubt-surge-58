@@ -42,7 +42,7 @@ const Index = () => {
           onClick={() => navigate('/bets')}
           className="w-full bg-betting-primary hover:bg-betting-primary/80 text-white"
         >
-          Choose Bets <ArrowRight className="ml-2" />
+          Choose <ArrowRight className="ml-2" />
         </Button>
       </motion.div>
     </div>
