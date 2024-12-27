@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-betting-dark text-white p-6 pb-20">
       <motion.div
@@ -33,6 +38,12 @@ const Index = () => {
             </li>
           </ul>
         </div>
+        <Button 
+          onClick={() => navigate('/bets')}
+          className="w-full bg-betting-primary hover:bg-betting-primary/80 text-white"
+        >
+          Choose Bets <ArrowRight className="ml-2" />
+        </Button>
       </motion.div>
     </div>
   );
