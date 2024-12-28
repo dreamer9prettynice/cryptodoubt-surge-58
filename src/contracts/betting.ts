@@ -19,9 +19,9 @@ export const createBettingContract = async (config: {
         creatorAddress: Address.parse(config.creatorAddress)
     };
 
-    const contract = BettingContract.createForDeploy(
-        contractCode,
-        bettingConfig
+    const contract = BettingContract.createFromConfig(
+        bettingConfig,
+        contractCode
     );
 
     return {
