@@ -1,27 +1,30 @@
-import { Blockchain, SandboxContract } from '@ton-community/sandbox';
+import { Blockchain, SandboxContract, createTestWallet } from '@ton-community/sandbox';
 import { toNano } from '@ton/core';
-import { Betting } from '../wrappers/Betting';
+import { BettingContract } from '../../BettingContract';
 import '@ton-community/test-utils';
-import { compile } from '@ton-community/blueprint';
 
-describe('Betting', () => {
+describe('Betting Contract', () => {
     let blockchain: Blockchain;
-    let betting: SandboxContract<Betting>;
+    let betting: SandboxContract<BettingContract>;
+    let deployer: any;
     
     beforeEach(async () => {
         blockchain = await Blockchain.create();
+        deployer = await createTestWallet(blockchain);
         
-        betting = blockchain.openContract(
-            Betting.createFromConfig({
+        betting = blockchain.openContract(new BettingContract(
+            deployer.address,
+            {
                 betId: "test_bet",
                 title: "Test Bet",
                 amount: toNano('1'),
                 expirationTime: Math.floor(Date.now() / 1000) + 3600,
-                creatorAddress: blockchain.sender.address
-            }, await compile('Betting'))
-        );
+                creatorAddress: deployer.address
+            }
+        ));
 
-        await betting.sendDeploy(blockchain.sender);
+        const deployResult = await betting.sendDeploy(deployer.getSender(), toNano('0.05'));
+        expect(deployResult.transactions).toBeDefined();
     });
 
     it('should deploy', async () => {
@@ -30,10 +33,13 @@ describe('Betting', () => {
     });
 
     it('should accept bets', async () => {
-        const result = await betting.sendBet(blockchain.sender, {
-            amount: toNano('1'),
-            choice: 'yes'
-        });
-        expect(result.transactions).toBeDefined();
+        const betResult = await betting.sendBet(
+            deployer.getSender(),
+            {
+                amount: toNano('1'),
+                choice: 'yes'
+            }
+        );
+        expect(betResult.transactions).toBeDefined();
     });
 });

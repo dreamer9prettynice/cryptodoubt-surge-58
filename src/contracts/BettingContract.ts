@@ -21,23 +21,26 @@ export type BettingConfig = {
 export class BettingContract implements Contract {
     constructor(
         readonly address: Address,
+        readonly config?: BettingConfig,
         readonly init?: { code: Cell; data: Cell }
     ) {}
 
-    static createForDeploy(code: Cell, initialData: BettingConfig): BettingContract {
+    static createFromConfig(config: BettingConfig, code: Cell, workchain = 0) {
         const data = beginCell()
-            .storeStringTail(initialData.betId)
-            .storeStringTail(initialData.title)
-            .storeCoins(initialData.amount)
-            .storeUint(initialData.expirationTime, 64)
-            .storeAddress(initialData.creatorAddress)
+            .storeStringTail(config.betId)
+            .storeStringTail(config.title)
+            .storeCoins(config.amount)
+            .storeUint(config.expirationTime, 64)
+            .storeAddress(config.creatorAddress)
             .endCell();
-        return new BettingContract(contractAddress(0, { code, data }), { code, data });
+
+        const init = { code, data };
+        return new BettingContract(contractAddress(workchain, init), config, init);
     }
 
-    async sendDeploy(provider: ContractProvider, via: Sender) {
+    async sendDeploy(provider: ContractProvider, via: Sender, value: bigint = toNano('0.05')) {
         await provider.internal(via, {
-            value: toNano('0.05'), // Initial balance for contract
+            value,
             bounce: false,
             body: beginCell().endCell(),
         });
@@ -55,7 +58,7 @@ export class BettingContract implements Contract {
             value: opts.amount,
             bounce: true,
             body: beginCell()
-                .storeUint(1, 32) // op code for betting
+                .storeUint(1, 32)
                 .storeStringTail(opts.choice)
                 .endCell()
         });
@@ -81,7 +84,7 @@ export class BettingContract implements Contract {
             value: toNano('0.05'),
             bounce: true,
             body: beginCell()
-                .storeUint(2, 32) // op code for resolving
+                .storeUint(2, 32)
                 .storeStringTail(outcome)
                 .endCell()
         });

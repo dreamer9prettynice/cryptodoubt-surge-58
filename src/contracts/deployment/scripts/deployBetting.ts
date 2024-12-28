@@ -1,19 +1,20 @@
 import { toNano } from '@ton/core';
-import { Betting } from '../wrappers/Betting';
-import { compile, NetworkProvider } from '@ton-community/blueprint';
+import { NetworkProvider } from '@ton-community/blueprint';
+import { BettingContract } from '../../BettingContract';
 
 export async function run(provider: NetworkProvider) {
-    const betting = provider.open(
-        Betting.createFromConfig({
+    const betting = provider.open(new BettingContract(
+        provider.sender().address!,
+        {
             betId: "bet_" + Date.now().toString(),
             title: "Test Bet",
             amount: toNano('1'),
-            expirationTime: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+            expirationTime: Math.floor(Date.now() / 1000) + 3600,
             creatorAddress: provider.sender().address!
-        }, await compile('Betting'))
-    );
+        }
+    ));
 
-    await betting.sendDeploy(provider.sender());
+    await betting.sendDeploy(provider.sender(), toNano('0.05'));
 
     await provider.waitForDeploy(betting.address);
 
