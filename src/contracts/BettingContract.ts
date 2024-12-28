@@ -26,8 +26,8 @@ export class BettingContract implements Contract {
 
     static createForDeploy(code: Cell, initialData: BettingConfig): BettingContract {
         const data = beginCell()
-            .storeBigString(initialData.betId)
-            .storeBigString(initialData.title)
+            .storeStringTail(initialData.betId)
+            .storeStringTail(initialData.title)
             .storeCoins(initialData.amount)
             .storeUint(initialData.expirationTime, 64)
             .storeAddress(initialData.creatorAddress)
@@ -56,7 +56,7 @@ export class BettingContract implements Contract {
             bounce: true,
             body: beginCell()
                 .storeUint(1, 32) // op code for betting
-                .storeBigString(opts.choice)
+                .storeStringTail(opts.choice)
                 .endCell()
         });
     }
@@ -82,7 +82,7 @@ export class BettingContract implements Contract {
             bounce: true,
             body: beginCell()
                 .storeUint(2, 32) // op code for resolving
-                .storeBigString(outcome)
+                .storeStringTail(outcome)
                 .endCell()
         });
     }
