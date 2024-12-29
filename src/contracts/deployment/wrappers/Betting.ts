@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, SendMode } from '@ton/core';
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender } from 'ton-core';
 
 export type BettingConfig = {
     betId: string;
@@ -30,40 +30,19 @@ export class Betting implements Contract {
 
     async sendDeploy(provider: ContractProvider, via: Sender) {
         await provider.internal(via, {
-            value: "0.05", // Initial balance
-            bounce: false
+            value: toNano('0.05'),
+            bounce: false,
+            body: beginCell().endCell()
         });
     }
 
-    async sendBet(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            amount: bigint;
-            choice: 'yes' | 'no';
-        }
-    ) {
+    async sendBet(provider: ContractProvider, via: Sender, opts: { amount: bigint; choice: 'yes' | 'no' }) {
         await provider.internal(via, {
             value: opts.amount,
             bounce: true,
             body: beginCell()
-                .storeUint(1, 32) // op for betting
+                .storeUint(1, 32)
                 .storeStringTail(opts.choice)
-                .endCell()
-        });
-    }
-
-    async sendResolve(
-        provider: ContractProvider,
-        via: Sender,
-        outcome: 'yes' | 'no'
-    ) {
-        await provider.internal(via, {
-            value: "0.05",
-            bounce: true,
-            body: beginCell()
-                .storeUint(2, 32) // op for resolving
-                .storeStringTail(outcome)
                 .endCell()
         });
     }
