@@ -1,5 +1,5 @@
 import { Blockchain } from '@ton-community/sandbox';
-import { Address, Cell, toNano } from '@ton/core';
+import { Address, Cell, toNano, beginCell } from '@ton/core';
 import { BettingContract } from '../../BettingContract';
 import '@ton-community/test-utils';
 import { compileFunc } from '@ton-community/func-js';
@@ -36,14 +36,14 @@ describe('Betting Contract (Mainnet)', () => {
             creatorAddress: deployer.address
         }, Cell.fromBoc(Buffer.from(result.codeBoc, 'base64'))[0]);
 
-        const deployResult = await blockchain.sendMessage(
-            deployer.getSender(),
-            {
-                to: contract.address,
-                value: toNano('0.05'),
-                init: contract.init
-            }
-        );
+        const deployMessage = beginCell()
+            .endCell();
+
+        const deployResult = await blockchain.sendMessage(deployMessage, {
+            value: toNano('0.05'),
+            from: deployer.address,
+            bounce: false
+        });
 
         expect(deployResult.transactions).toBeDefined();
     });
@@ -52,14 +52,16 @@ describe('Betting Contract (Mainnet)', () => {
         const sender = await blockchain.treasury('sender');
         const betAmount = toNano('1');
         
-        const betResult = await blockchain.sendMessage(
-            sender.getSender(),
-            {
-                to: contract.address,
-                value: betAmount,
-                body: { op: 'bet', choice: 'yes' }
-            }
-        );
+        const betMessage = beginCell()
+            .storeUint(1, 32)  // op for betting
+            .storeStringTail('yes')
+            .endCell();
+
+        const betResult = await blockchain.sendMessage(betMessage, {
+            value: betAmount,
+            from: sender.address,
+            bounce: true
+        });
 
         expect(betResult.transactions).toBeDefined();
     });

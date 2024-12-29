@@ -20,16 +20,22 @@ export async function run(provider: NetworkProvider) {
     }
 
     // Create contract instance with proper Cell conversion
-    const betting = provider.open(BettingContract.createFromConfig({
+    const contract = BettingContract.createFromConfig({
         betId: "bet_" + Date.now().toString(),
         title: "Test Bet",
         amount: toNano('1'),
         expirationTime: Math.floor(Date.now() / 1000) + 3600,
         creatorAddress: provider.sender().address!
-    }, Cell.fromBoc(Buffer.from(result.codeBoc, 'base64'))[0]));
+    }, Cell.fromBoc(Buffer.from(result.codeBoc, 'base64'))[0]);
 
     // Deploy the contract with proper parameters
-    await betting.sendDeploy(provider.sender(), toNano('0.05'));
+    const message = {
+        body: beginCell().endCell(),
+        value: toNano('0.05'),
+        bounce: false
+    };
+
+    await provider.send(contract.address, message);
     
-    console.log('Deployed betting contract at address:', betting.address.toString());
+    console.log('Deployed betting contract at address:', contract.address.toString());
 }
