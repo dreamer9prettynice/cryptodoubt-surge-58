@@ -1,4 +1,4 @@
-import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender } from 'ton-core';
+import { Address, beginCell, Cell, Contract, contractAddress, ContractProvider, Sender, toNano } from 'ton-core';
 
 export type BettingConfig = {
     betId: string;
@@ -9,23 +9,23 @@ export type BettingConfig = {
 };
 
 export class Betting implements Contract {
-    constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
+    constructor(
+        readonly address: Address,
+        readonly config?: BettingConfig,
+        readonly init?: { code: Cell; data: Cell }
+    ) {}
 
     static createFromConfig(config: BettingConfig, code: Cell, workchain = 0) {
         const data = beginCell()
             .storeStringTail(config.betId)
             .storeStringTail(config.title)
             .storeCoins(config.amount)
-            .storeCoins(0n) // yes_amount
-            .storeCoins(0n) // no_amount
             .storeUint(config.expirationTime, 64)
             .storeAddress(config.creatorAddress)
-            .storeStringTail("active")
-            .storeDict(null)
             .endCell();
 
         const init = { code, data };
-        return new Betting(contractAddress(workchain, init), init);
+        return new Betting(contractAddress(workchain, init), config, init);
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender) {
