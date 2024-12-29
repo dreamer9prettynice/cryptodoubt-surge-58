@@ -26,10 +26,7 @@ export async function run(provider: NetworkProvider) {
         creatorAddress: provider.sender().address!
     }, Cell.fromBoc(Buffer.from(result.codeBoc, 'base64'))[0]);
 
-    await provider.deploy(contract, {
-        value: toNano('0.05'),
-        bounce: false
-    });
+    await provider.deploy(contract, toNano('0.05'));
     
     console.log('Deployed betting contract at address:', contract.address.toString());
 }

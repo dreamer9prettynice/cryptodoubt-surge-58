@@ -34,14 +34,9 @@ describe('Betting Contract (Mainnet)', () => {
             creatorAddress: deployer.address
         }, Cell.fromBoc(Buffer.from(result.codeBoc, 'base64'))[0]);
 
-        const deployResult = await blockchain.sendMessage({
-            source: deployer.address,
-            dest: contract.address,
-            value: toNano('0.05'),
-            bounce: false,
-            body: beginCell().endCell()
-        });
-
+        const message = beginCell().endCell();
+        
+        const deployResult = await blockchain.sendMessage(message);
         expect(deployResult.transactions).toBeDefined();
     });
 
@@ -49,17 +44,12 @@ describe('Betting Contract (Mainnet)', () => {
         const sender = await blockchain.treasury('sender');
         const betAmount = toNano('1');
         
-        const betResult = await blockchain.sendMessage({
-            source: sender.address,
-            dest: contract.address,
-            value: betAmount,
-            bounce: true,
-            body: beginCell()
-                .storeUint(1, 32)  // op for betting
-                .storeStringTail('yes')
-                .endCell()
-        });
-
+        const message = beginCell()
+            .storeUint(1, 32)
+            .storeStringTail('yes')
+            .endCell();
+            
+        const betResult = await blockchain.sendMessage(message);
         expect(betResult.transactions).toBeDefined();
     });
 });
