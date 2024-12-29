@@ -1,5 +1,5 @@
 import { NetworkProvider } from '@ton-community/blueprint';
-import { Address, Cell, toNano } from '@ton/core';
+import { Address, Cell, toNano, beginCell } from '@ton/core';
 import { BettingContract } from '../../BettingContract';
 import { compileFunc } from '@ton-community/func-js';
 import * as fs from 'fs';
@@ -9,7 +9,6 @@ export async function run(provider: NetworkProvider) {
     const contractPath = path.resolve(__dirname, '../contracts/Betting.fc');
     const source = fs.readFileSync(contractPath, 'utf8');
     
-    // Compile the contract with correct config
     const result = await compileFunc({
         sources: { 'Betting.fc': source },
         targets: ['Betting.fc']
@@ -29,13 +28,10 @@ export async function run(provider: NetworkProvider) {
     }, Cell.fromBoc(Buffer.from(result.codeBoc, 'base64'))[0]);
 
     // Deploy the contract with proper parameters
-    const message = {
-        body: beginCell().endCell(),
+    await provider.deploy(contract, {
         value: toNano('0.05'),
         bounce: false
-    };
-
-    await provider.send(contract.address, message);
+    });
     
     console.log('Deployed betting contract at address:', contract.address.toString());
 }
