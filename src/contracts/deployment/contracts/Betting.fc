@@ -1,0 +1,65 @@
+;; Betting Smart Contract
+
+(int, slice, int) load_data() inline {
+    var ds = get_data().begin_parse();
+    return (
+        ds~load_uint(64),  ;; bet_id
+        ds~load_msg_addr(),;; creator_address
+        ds~load_coins()    ;; amount
+    );
+}
+
+() save_data(int bet_id, slice creator_address, int amount) impure inline {
+    set_data(begin_cell()
+        .store_uint(bet_id, 64)
+        .store_msg_addr(creator_address)
+        .store_coins(amount)
+        .end_cell());
+}
+
+() recv_internal(int msg_value, cell in_msg_full, slice in_msg_body) impure {
+    if (in_msg_body.slice_empty?()) { 
+        return (); 
+    }
+
+    var cs = in_msg_full.begin_parse();
+    var flags = cs~load_uint(4);
+    if (flags & 1) {
+        return ();
+    }
+    slice sender_address = cs~load_msg_addr();
+    
+    int op = in_msg_body~load_uint(32);
+    
+    if (op == 1) { ;; Participate in bet
+        int bet_amount = in_msg_body~load_coins();
+        (int bet_id, slice creator_address, int current_amount) = load_data();
+        save_data(bet_id, creator_address, current_amount + bet_amount);
+        return ();
+    }
+    
+    if (op == 2) { ;; Resolve bet
+        (int bet_id, slice creator_address, int amount) = load_data();
+        throw_unless(401, equal_slices(sender_address, creator_address));
+        
+        int winner = in_msg_body~load_uint(1);
+        slice winner_address = in_msg_body~load_msg_addr();
+        
+        var msg = begin_cell()
+            .store_uint(0x18, 6)
+            .store_slice(winner_address)
+            .store_coins(amount)
+            .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+            .end_cell();
+        
+        send_raw_message(msg, 1);
+        return ();
+    }
+    
+    throw(0xffff);
+}
+
+;; Get methods
+(int, slice, int) get_bet_info() method_id {
+    return load_data();
+}
