@@ -1,4 +1,4 @@
-# Betting Smart Contract Deployment
+# Betting Smart Contract Deployment (Mainnet)
 
 ## Setup
 1. Install TON CLI:
@@ -16,26 +16,32 @@ npm install
 npm run compile
 ```
 
-4. Create and fund your wallet:
+4. Create and fund your wallet for mainnet:
 ```bash
-ton-cli wallet create
-# Fund your wallet with test TON tokens
+ton-cli wallet create --mainnet
+# Fund your wallet with real TON tokens
 ```
 
-5. Deploy the contract:
+5. Deploy the contract to mainnet:
 ```bash
-ton-cli deploy build/betting.cell --wallet <your_wallet_address> --params "{}"
+ton-cli deploy build/betting.cell --network mainnet --wallet <your_wallet_address> --params "{}"
 ```
+
+## Important Notes
+- This deployment is configured for TON mainnet
+- Ensure you have sufficient TON tokens in your wallet
+- Double-check all parameters before deployment
+- Keep your wallet keys secure
 
 ## Contract Structure
-The betting contract is located in `contracts/Betting.fc`. It implements the core betting functionality including:
+The betting contract implements:
 - Bet creation
 - Participation
 - Result resolution
 - Fund distribution
 
 ## Development
-- Modify the contract code in `contracts/Betting.fc`
+- Modify contract code in `contracts/Betting.fc`
 - Run `npm run compile` to compile changes
-- Test using `npm test`
+- Test thoroughly before mainnet deployment
 - Deploy using the deployment steps above
