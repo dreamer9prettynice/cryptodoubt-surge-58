@@ -1,5 +1,5 @@
 import { Blockchain } from '@ton-community/sandbox';
-import { Address, Cell, toNano, beginCell } from '@ton/core';
+import { Address, Cell, toNano, beginCell } from 'ton-core';
 import { BettingContract } from '../../BettingContract';
 import '@ton-community/test-utils';
 import { compileFunc } from '@ton-community/func-js';

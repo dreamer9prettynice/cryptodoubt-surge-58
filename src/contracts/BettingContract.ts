@@ -8,7 +8,7 @@ import {
     Sender, 
     SendMode,
     toNano 
-} from '@ton/core';
+} from 'ton-core';
 
 export type BettingConfig = {
     betId: string;
