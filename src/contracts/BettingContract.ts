@@ -8,7 +8,7 @@ import {
     Sender, 
     SendMode,
     toNano 
-} from 'ton-core';
+} from '@ton/core';
 
 export type BettingConfig = {
     betId: string;
@@ -21,26 +21,23 @@ export type BettingConfig = {
 export class BettingContract implements Contract {
     constructor(
         readonly address: Address,
-        readonly config?: BettingConfig,
         readonly init?: { code: Cell; data: Cell }
     ) {}
 
-    static createFromConfig(config: BettingConfig, code: Cell, workchain = 0) {
+    static createForDeploy(code: Cell, initialData: BettingConfig): BettingContract {
         const data = beginCell()
-            .storeStringTail(config.betId)
-            .storeStringTail(config.title)
-            .storeCoins(config.amount)
-            .storeUint(config.expirationTime, 64)
-            .storeAddress(config.creatorAddress)
+            .storeBigString(initialData.betId)
+            .storeBigString(initialData.title)
+            .storeCoins(initialData.amount)
+            .storeUint(initialData.expirationTime, 64)
+            .storeAddress(initialData.creatorAddress)
             .endCell();
-
-        const init = { code, data };
-        return new BettingContract(contractAddress(workchain, init), config, init);
+        return new BettingContract(contractAddress(0, { code, data }), { code, data });
     }
 
-    async sendDeploy(provider: ContractProvider, via: Sender, value: bigint = toNano('0.05')) {
+    async sendDeploy(provider: ContractProvider, via: Sender) {
         await provider.internal(via, {
-            value,
+            value: toNano('0.05'), // Initial balance for contract
             bounce: false,
             body: beginCell().endCell(),
         });
@@ -58,8 +55,8 @@ export class BettingContract implements Contract {
             value: opts.amount,
             bounce: true,
             body: beginCell()
-                .storeUint(1, 32)
-                .storeStringTail(opts.choice)
+                .storeUint(1, 32) // op code for betting
+                .storeBigString(opts.choice)
                 .endCell()
         });
     }
@@ -84,8 +81,8 @@ export class BettingContract implements Contract {
             value: toNano('0.05'),
             bounce: true,
             body: beginCell()
-                .storeUint(2, 32)
-                .storeStringTail(outcome)
+                .storeUint(2, 32) // op code for resolving
+                .storeBigString(outcome)
                 .endCell()
         });
     }
