@@ -80,38 +80,4 @@ export class BettingContract implements Contract {
         const { stack } = await provider.get('get_participants', []);
         return stack.readCell();
     }
-
-    async resolveOutcome(
-        provider: ContractProvider,
-        via: Sender,
-        outcome: 'yes' | 'no'
-    ) {
-        await provider.internal(via, {
-            value: toNano('0.05'),
-            bounce: true,
-            body: beginCell()
-                .storeUint(2, 32) // op code for resolving
-                .storeStringRefTail(outcome)
-                .endCell()
-        });
-    }
-
-    async joinBet(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            amount: bigint;
-            choice: 'yes' | 'no';
-        }
-    ) {
-        await provider.internal(via, {
-            value: opts.amount,
-            bounce: true,
-            body: beginCell()
-                .storeUint(3, 32) // op code for joining
-                .storeStringRefTail(opts.choice)
-                .storeCoins(opts.amount)
-                .endCell()
-        });
-    }
 }

@@ -43,7 +43,6 @@ export const participateInBet = async (
     // In production, you would:
     // 1. Connect to actual TON provider
     // 2. Send the transaction
-    // This is a simplified version
     console.log(`Participating in bet at ${contractAddress} with ${amount} TON, choice: ${choice}`);
     return true;
 };
@@ -56,7 +55,6 @@ export const getBetStatus = async (contractAddress: string) => {
     // In production, you would:
     // 1. Connect to actual TON provider
     // 2. Get the contract state
-    // This is a simplified version
     return {
         totalAmount: toNano('1000000'),
         yesAmount: toNano('600000'),
@@ -64,20 +62,4 @@ export const getBetStatus = async (contractAddress: string) => {
         status: 'active',
         expirationTime: Date.now() + 86400000 // 24 hours from now
     };
-};
-
-export const resolveBet = async (
-    contractAddress: string,
-    outcome: 'yes' | 'no'
-) => {
-    const contract = new BettingContract(
-        Address.parse(contractAddress)
-    );
-
-    // In production, you would:
-    // 1. Connect to actual TON provider
-    // 2. Send resolve transaction
-    // This is a simplified version
-    console.log(`Resolving bet at ${contractAddress} with outcome: ${outcome}`);
-    return true;
 };
