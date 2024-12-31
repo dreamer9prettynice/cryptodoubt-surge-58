@@ -1,6 +1,7 @@
 import { Address, beginCell, Cell, toNano } from '@ton/core';
 import { BettingContract } from '../BettingContract';
 import { NetworkProvider } from '@ton/blueprint';
+import { compileFuncToB64 } from '../utils/compiler';
 
 export async function deployBettingContract(networkProvider: NetworkProvider, initialData: {
     betId: string;
@@ -22,15 +23,8 @@ export async function deployBettingContract(networkProvider: NetworkProvider, in
     });
 
     // Deploy contract using provider
-    const provider = networkProvider.open(betting);
-    await betting.sendDeploy(provider.provider, networkProvider.sender());
+    const openedContract = networkProvider.open(betting);
+    await betting.sendDeploy(openedContract, networkProvider.sender());
 
     return betting;
-}
-
-async function compileFuncToB64(filename: string): Promise<string> {
-    // This is a placeholder for the actual compilation process
-    // In a real environment, you would compile the FunC code to cell-boc
-    // For now, we'll use a pre-compiled version
-    return "te6ccgECFAEAA6wART/APSkICLWfSB0Z3RZNIQELSXBP..."; // Add your compiled contract code here
 }
