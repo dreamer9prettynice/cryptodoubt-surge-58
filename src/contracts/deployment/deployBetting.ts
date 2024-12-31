@@ -21,15 +21,8 @@ export async function deployBettingContract(provider: NetworkProvider, initialDa
         creatorAddress: Address.parse(initialData.creatorAddress)
     });
 
-    // Deploy contract with proper sender type
-    const sender: Sender = {
-        send: async (args: any) => {
-            // Implementation of send method
-            return provider.sender().send(args);
-        }
-    };
-
-    await betting.sendDeploy(provider.sender(), sender);
+    // Deploy contract using provider
+    await betting.sendDeploy(provider, provider.sender());
 
     return betting;
 }
