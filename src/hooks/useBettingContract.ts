@@ -54,7 +54,6 @@ export const useBettingContract = () => {
     };
 
     const participate = async (
-        contractAddress: string,
         amount: number,
         choice: 'yes' | 'no'
     ) => {
@@ -69,7 +68,7 @@ export const useBettingContract = () => {
 
         setIsLoading(true);
         try {
-            await participateInBet(contractAddress, amount, choice);
+            const result = await participateInBet(amount, choice);
             
             toast({
                 title: "Participation successful",
@@ -89,9 +88,9 @@ export const useBettingContract = () => {
         }
     };
 
-    const getBetDetails = async (contractAddress: string) => {
+    const getBetDetails = async () => {
         try {
-            return await getBetStatus(contractAddress);
+            return await getBetStatus();
         } catch (error: any) {
             console.error("Error fetching bet details:", error);
             return null;

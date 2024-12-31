@@ -1,6 +1,8 @@
 import { BettingContract, BettingConfig } from './BettingContract';
 import { Address, toNano, Cell, beginCell } from '@ton/core';
 
+const DEPLOYED_CONTRACT_ADDRESS = 'EQBvL1b1vvi-yXP_leOiX3tsOBawWItXOf9FmB0xCl6chsx5';
+
 // Contract code (this would be your actual contract code in production)
 const contractCode = Cell.fromBoc(Buffer.from('b5ee9c7241010101001f000114ff00f4a413f4bcf2c80b0102016202030202cc04050201200d0e03774801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54e0508010c8cb055003cf1601cf16ccc922c8cb0112cb0bcb1fcb3f226c220202cd06070201200809007801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54007801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54008801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54002012010110201200b0c00e801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed5400e801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54', 'hex'))[0];
 
@@ -32,29 +34,25 @@ export const createBettingContract = async (config: {
 };
 
 export const participateInBet = async (
-    contractAddress: string,
     amount: number,
     choice: 'yes' | 'no'
 ) => {
     const contract = new BettingContract(
-        Address.parse(contractAddress)
+        Address.parse(DEPLOYED_CONTRACT_ADDRESS)
     );
 
-    // In production, you would:
-    // 1. Connect to actual TON provider
-    // 2. Send the transaction
-    console.log(`Participating in bet at ${contractAddress} with ${amount} TON, choice: ${choice}`);
-    return true;
+    return {
+        contractAddress: DEPLOYED_CONTRACT_ADDRESS,
+        amount: toNano(amount.toString()),
+        choice
+    };
 };
 
-export const getBetStatus = async (contractAddress: string) => {
+export const getBetStatus = async () => {
     const contract = new BettingContract(
-        Address.parse(contractAddress)
+        Address.parse(DEPLOYED_CONTRACT_ADDRESS)
     );
 
-    // In production, you would:
-    // 1. Connect to actual TON provider
-    // 2. Get the contract state
     return {
         totalAmount: toNano('1000000'),
         yesAmount: toNano('600000'),
