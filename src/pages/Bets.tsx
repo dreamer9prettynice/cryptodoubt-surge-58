@@ -15,42 +15,22 @@ const Bets = () => {
     {
       id: 1,
       title: "Bitcoin will reach 100k",
-      amount: "1,000,000 USDT",
+      amount: "1,000,000 TON",
       expiration: "24h remaining",
       participants: 12,
       poolAddress: "EQCD39VS5jcptHL8vMjEXrzGaRcCVYto7HUn4bpAOg8xqB2N",
     },
-    // Add more mock bets here
   ];
 
-  const handleBetParticipation = async (choice: string, amount: number) => {
-    try {
-      // Simulated transaction for now
+  const openParticipationModal = (bet: any) => {
+    if (!tonConnectUI.connected) {
       toast({
-        title: "Processing bet participation",
-        description: "Please confirm the transaction in your wallet",
-      });
-
-      // Here you would typically:
-      // 1. Call the smart contract to participate in the bet
-      // 2. Send TON to the pool address
-      // 3. Update the UI after successful transaction
-
-      toast({
-        title: "Success",
-        description: "You have successfully participated in the bet",
-      });
-    } catch (error: any) {
-      console.error("Error participating in bet:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to participate in bet",
+        title: "Wallet not connected",
+        description: "Please connect your TON wallet to participate",
         variant: "destructive",
       });
+      return;
     }
-  };
-
-  const openParticipationModal = (bet: any) => {
     setSelectedBet(bet);
     setIsModalOpen(true);
   };
@@ -98,7 +78,6 @@ const Bets = () => {
           onClose={() => setIsModalOpen(false)}
           betTitle={selectedBet.title}
           poolAmount={selectedBet.amount}
-          onParticipate={handleBetParticipation}
         />
       )}
     </div>

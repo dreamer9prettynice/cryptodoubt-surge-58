@@ -75,7 +75,7 @@ export const BetParticipationModal = ({
           </div>
 
           <div className="space-y-3">
-            <Label>Bet Amount (USDT)</Label>
+            <Label>Bet Amount (TON)</Label>
             <Input
               type="number"
               placeholder="Enter amount"
@@ -85,7 +85,7 @@ export const BetParticipationModal = ({
             />
             {amount && (
               <p className="text-sm text-betting-primary">
-                Potential Winnings: {calculatePotentialWinnings()} USDT
+                Potential Winnings: {calculatePotentialWinnings()} TON
               </p>
             )}
           </div>

@@ -1,18 +1,16 @@
-import { Address, beginCell, Cell, toNano, Sender } from '@ton/core';
+import { Address, beginCell, Cell, toNano } from '@ton/core';
 import { BettingContract } from '../BettingContract';
 import { NetworkProvider } from '@ton/blueprint';
 
-export async function deployBettingContract(provider: NetworkProvider, initialData: {
+export async function deployBettingContract(networkProvider: NetworkProvider, initialData: {
     betId: string;
     title: string;
     amount: string;
     expirationTime: number;
     creatorAddress: string;
 }) {
-    // Compile the contract
     const contractCode = Cell.fromBoc(Buffer.from('... contract code here ...', 'base64'))[0];
 
-    // Create contract instance
     const betting = BettingContract.createForDeploy(contractCode, {
         betId: initialData.betId,
         title: initialData.title,
@@ -21,8 +19,11 @@ export async function deployBettingContract(provider: NetworkProvider, initialDa
         creatorAddress: Address.parse(initialData.creatorAddress)
     });
 
+    // Get contract provider from network provider
+    const provider = networkProvider.open(betting);
+    
     // Deploy contract using provider
-    await betting.sendDeploy(provider, provider.sender());
+    await betting.sendDeploy(provider, networkProvider.sender());
 
     return betting;
 }
