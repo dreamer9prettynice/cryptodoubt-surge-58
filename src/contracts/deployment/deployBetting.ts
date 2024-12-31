@@ -24,7 +24,7 @@ export async function deployBettingContract(networkProvider: NetworkProvider, in
 
     // Deploy contract using provider
     const openedContract = networkProvider.open(betting);
-    await betting.sendDeploy(openedContract, networkProvider.sender());
+    await betting.sendDeploy(openedContract.provider, networkProvider.sender());
 
     return betting;
 }

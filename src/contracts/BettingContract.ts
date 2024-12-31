@@ -5,7 +5,6 @@ import {
     Contract, 
     contractAddress, 
     ContractProvider, 
-    OpenedContract,
     Sender, 
     SendMode,
     toNano 
