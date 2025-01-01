@@ -25,14 +25,14 @@ export class BettingContract implements Contract {
 
     static createForDeploy(code: Cell, initialData: BettingConfig): BettingContract {
         const data = beginCell()
-            .storeStringRefTail(initialData.betId)
-            .storeStringRefTail(initialData.title)
+            .storeBigString(initialData.betId)
+            .storeBigString(initialData.title)
             .storeCoins(toNano('0'))  // Initial total amount
             .storeCoins(toNano('0'))  // Initial yes amount
             .storeCoins(toNano('0'))  // Initial no amount
             .storeUint(initialData.expirationTime, 64)
             .storeAddress(initialData.creatorAddress)
-            .storeStringRefTail('active')  // Initial status
+            .storeBigString('active')  // Initial status
             .storeDict(null)  // Empty participants dictionary
             .storeAddress(Address.parse('UQCoiSY0kAz82hVFaeh5d8gzdRy-j1nY2nbbG4dUM5y7ph2m'))  // Yes pool
             .storeAddress(Address.parse('UQBY-TCqDyLeyMdv-KHcwutKQTL9SLf5ByQ24zbNZKddAphP'))  // No pool
@@ -61,7 +61,7 @@ export class BettingContract implements Contract {
             bounce: true,
             body: beginCell()
                 .storeUint(1, 32)  // op code for betting
-                .storeStringRefTail(opts.choice)
+                .storeBigString(opts.choice)
                 .endCell()
         });
     }
@@ -79,7 +79,7 @@ export class BettingContract implements Contract {
             bounce: true,
             body: beginCell()
                 .storeUint(3, 32)  // op code for joining bet
-                .storeStringRefTail(opts.choice)
+                .storeBigString(opts.choice)
                 .storeCoins(opts.amount)
                 .endCell()
         });
@@ -95,7 +95,7 @@ export class BettingContract implements Contract {
             bounce: true,
             body: beginCell()
                 .storeUint(2, 32)  // op code for resolving
-                .storeStringRefTail(outcome)
+                .storeBigString(outcome)
                 .endCell()
         });
     }
