@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { createBettingContract, participateInBet, getBetStatus } from '../contracts/betting';
 import { useToast } from './use-toast';
+import { toNano } from '@ton/core';
 
 export const useBettingContract = () => {
     const [tonConnectUI] = useTonConnectUI();
@@ -30,7 +31,6 @@ export const useBettingContract = () => {
             const contract = await createBettingContract({
                 betId: `bet_${Date.now()}`,
                 title,
-                amount,
                 expirationHours,
                 creatorAddress: walletAddress
             });
@@ -69,7 +69,11 @@ export const useBettingContract = () => {
 
         setIsLoading(true);
         try {
-            await participateInBet(contractAddress, amount, choice);
+            await participateInBet(
+                contractAddress,
+                amount,
+                choice
+            );
             
             toast({
                 title: "Participation successful",

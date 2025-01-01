@@ -2,19 +2,17 @@ import { BettingContract, BettingConfig } from './BettingContract';
 import { Address, toNano, Cell, beginCell } from '@ton/core';
 
 // Contract code (this would be your actual contract code in production)
-const contractCode = Cell.fromBoc(Buffer.from('b5ee9c7241010101001f000114ff00f4a413f4bcf2c80b0102016202030202cc04050201200d0e03774801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54e0508010c8cb055003cf1601cf16ccc922c8cb0112cb0bcb1fcb3f226c220202cd06070201200809007801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54007801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54008801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54002012010110201200b0c00e801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed5400e801e80d0c0404c8cb1f5240cb1f5230cb3f58fa025007cf165006cf16ccccc9ed54', 'hex'))[0];
+const contractCode = Cell.fromBoc(Buffer.from('B5EE9C724101010100710000C2FF0020DD2082014C97BA218201339CBAB19F71B0ED44D0D31FD31F31D70BFFE304E0A4F2608308D71820D31FD31FD31FF82313BBF263ED44D0D31FD31FD3FFD15132BAF2A15144BAF2A204F901541055F910F2A3F404D31FD31FD3FFD15132BAF2A15144BAF2A204F901541055F910F2A3F4', 'hex'))[0];
 
 export const createBettingContract = async (config: {
     betId: string;
     title: string;
-    amount: number;
     expirationHours: number;
     creatorAddress: string;
 }) => {
     const bettingConfig: BettingConfig = {
         betId: config.betId,
         title: config.title,
-        amount: toNano(config.amount.toString()),
         expirationTime: Math.floor(Date.now() / 1000) + (config.expirationHours * 3600),
         creatorAddress: Address.parse(config.creatorAddress)
     };
@@ -42,8 +40,7 @@ export const participateInBet = async (
 
     // In production, you would:
     // 1. Connect to actual TON provider
-    // 2. Send the transaction
-    // This is a simplified version
+    // 2. Send the transaction with the join bet operation
     console.log(`Participating in bet at ${contractAddress} with ${amount} TON, choice: ${choice}`);
     return true;
 };
@@ -55,8 +52,7 @@ export const getBetStatus = async (contractAddress: string) => {
 
     // In production, you would:
     // 1. Connect to actual TON provider
-    // 2. Get the contract state
-    // This is a simplified version
+    // 2. Get the contract state using getStatus method
     return {
         totalAmount: toNano('1000000'),
         yesAmount: toNano('600000'),
@@ -76,8 +72,7 @@ export const resolveBet = async (
 
     // In production, you would:
     // 1. Connect to actual TON provider
-    // 2. Send resolve transaction
-    // This is a simplified version
+    // 2. Send resolve transaction with the outcome
     console.log(`Resolving bet at ${contractAddress} with outcome: ${outcome}`);
     return true;
 };
