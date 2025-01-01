@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { Loader2 } from "lucide-react";
-import { useBettingContract } from "@/hooks/useBettingContract";
 
 interface BetParticipationModalProps {
   isOpen: boolean;
   onClose: () => void;
   betTitle: string;
   poolAmount: string;
+  onParticipate: (choice: string, amount: number) => Promise<void>;
 }
 
 export const BetParticipationModal = ({
@@ -20,25 +20,30 @@ export const BetParticipationModal = ({
   onClose,
   betTitle,
   poolAmount,
+  onParticipate,
 }: BetParticipationModalProps) => {
   const [tonConnectUI] = useTonConnectUI();
-  const { participate, isLoading } = useBettingContract();
   const [choice, setChoice] = useState<string>("yes");
   const [amount, setAmount] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const calculatePotentialWinnings = () => {
     const betAmount = parseFloat(amount) || 0;
+    // Simple calculation for demonstration - can be adjusted based on actual pool mechanics
     return (betAmount * 1.8).toFixed(2); // 80% return example
   };
 
   const handleSubmit = async () => {
     if (!amount || isNaN(parseFloat(amount))) return;
     
+    setIsSubmitting(true);
     try {
-      await participate(parseFloat(amount), choice as 'yes' | 'no');
+      await onParticipate(choice, parseFloat(amount));
       onClose();
     } catch (error) {
       console.error("Error participating in bet:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -75,7 +80,7 @@ export const BetParticipationModal = ({
           </div>
 
           <div className="space-y-3">
-            <Label>Bet Amount (TON)</Label>
+            <Label>Bet Amount (USDT)</Label>
             <Input
               type="number"
               placeholder="Enter amount"
@@ -85,17 +90,17 @@ export const BetParticipationModal = ({
             />
             {amount && (
               <p className="text-sm text-betting-primary">
-                Potential Winnings: {calculatePotentialWinnings()} TON
+                Potential Winnings: {calculatePotentialWinnings()} USDT
               </p>
             )}
           </div>
 
           <Button
             onClick={handleSubmit}
-            disabled={!tonConnectUI.connected || isLoading || !amount}
+            disabled={!tonConnectUI.connected || isSubmitting || !amount}
             className="w-full bg-betting-primary hover:bg-betting-primary/80"
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Processing...

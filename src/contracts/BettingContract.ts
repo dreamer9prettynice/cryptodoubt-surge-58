@@ -26,22 +26,18 @@ export class BettingContract implements Contract {
 
     static createForDeploy(code: Cell, initialData: BettingConfig): BettingContract {
         const data = beginCell()
-            .storeStringRefTail(initialData.betId)
-            .storeStringRefTail(initialData.title)
+            .storeBigString(initialData.betId)
+            .storeBigString(initialData.title)
             .storeCoins(initialData.amount)
-            .storeCoins(0n) // yes_amount
-            .storeCoins(0n) // no_amount
             .storeUint(initialData.expirationTime, 64)
             .storeAddress(initialData.creatorAddress)
-            .storeStringRefTail("active") // status
-            .storeDict() // empty participants dict
             .endCell();
         return new BettingContract(contractAddress(0, { code, data }), { code, data });
     }
 
     async sendDeploy(provider: ContractProvider, via: Sender) {
         await provider.internal(via, {
-            value: toNano('0.05'),
+            value: toNano('0.05'), // Initial balance for contract
             bounce: false,
             body: beginCell().endCell(),
         });
@@ -60,7 +56,7 @@ export class BettingContract implements Contract {
             bounce: true,
             body: beginCell()
                 .storeUint(1, 32) // op code for betting
-                .storeStringRefTail(opts.choice)
+                .storeBigString(opts.choice)
                 .endCell()
         });
     }
@@ -76,8 +72,18 @@ export class BettingContract implements Contract {
         };
     }
 
-    async getParticipants(provider: ContractProvider) {
-        const { stack } = await provider.get('get_participants', []);
-        return stack.readCell();
+    async resolveOutcome(
+        provider: ContractProvider,
+        via: Sender,
+        outcome: 'yes' | 'no'
+    ) {
+        await provider.internal(via, {
+            value: toNano('0.05'),
+            bounce: true,
+            body: beginCell()
+                .storeUint(2, 32) // op code for resolving
+                .storeBigString(outcome)
+                .endCell()
+        });
     }
 }
