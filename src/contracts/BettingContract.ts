@@ -27,15 +27,15 @@ export class BettingContract implements Contract {
         const data = beginCell()
             .storeStringRefTail(initialData.betId)
             .storeStringRefTail(initialData.title)
-            .storeCoins(toNano('0'))  // Initial total amount
-            .storeCoins(toNano('0'))  // Initial yes amount
-            .storeCoins(toNano('0'))  // Initial no amount
+            .storeCoins(toNano('0'))
+            .storeCoins(toNano('0'))
+            .storeCoins(toNano('0'))
             .storeUint(initialData.expirationTime, 64)
             .storeAddress(initialData.creatorAddress)
-            .storeStringRefTail('active')  // Initial status
-            .storeDict(null)  // Empty participants dictionary
-            .storeAddress(Address.parse('UQCoiSY0kAz82hVFaeh5d8gzdRy-j1nY2nbbG4dUM5y7ph2m'))  // Yes pool
-            .storeAddress(Address.parse('UQBY-TCqDyLeyMdv-KHcwutKQTL9SLf5ByQ24zbNZKddAphP'))  // No pool
+            .storeStringRefTail('active')
+            .storeDict(null)
+            .storeAddress(Address.parse('UQCoiSY0kAz82hVFaeh5d8gzdRy-j1nY2nbbG4dUM5y7ph2m'))
+            .storeAddress(Address.parse('UQBY-TCqDyLeyMdv-KHcwutKQTL9SLf5ByQ24zbNZKddAphP'))
             .endCell();
         return new BettingContract(contractAddress(0, { code, data }), { code, data });
     }
@@ -60,7 +60,7 @@ export class BettingContract implements Contract {
             value: opts.amount,
             bounce: true,
             body: beginCell()
-                .storeUint(1, 32)  // op code for betting
+                .storeUint(1, 32)
                 .storeStringRefTail(opts.choice)
                 .endCell()
         });
@@ -78,7 +78,7 @@ export class BettingContract implements Contract {
             value: opts.amount,
             bounce: true,
             body: beginCell()
-                .storeUint(3, 32)  // op code for joining bet
+                .storeUint(3, 32)
                 .storeStringRefTail(opts.choice)
                 .storeCoins(opts.amount)
                 .endCell()
@@ -94,7 +94,7 @@ export class BettingContract implements Contract {
             value: toNano('0.05'),
             bounce: true,
             body: beginCell()
-                .storeUint(2, 32)  // op code for resolving
+                .storeUint(2, 32)
                 .storeStringRefTail(outcome)
                 .endCell()
         });

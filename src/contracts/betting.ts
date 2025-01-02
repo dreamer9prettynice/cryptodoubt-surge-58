@@ -1,5 +1,5 @@
-import { BettingContract, BettingConfig } from './BettingContract';
-import { Address, toNano, Cell, beginCell } from '@ton/core';
+import { BettingContract } from './BettingContract';
+import { Address, toNano } from '@ton/core';
 
 // Using the deployed contract address
 const BETTING_CONTRACT_ADDRESS = 'EQevdolaf_AjNINQPmYWBWq9w1NWw1vQOFYuRqObrvrQB3';
@@ -10,13 +10,26 @@ export const getBettingContract = () => {
     );
 };
 
+export const createBet = async (
+    title: string,
+    amount: number,
+    expirationHours: number
+) => {
+    const contract = getBettingContract();
+    const amountInNano = toNano(amount.toString());
+    
+    return {
+        contractAddress: BETTING_CONTRACT_ADDRESS,
+        amount: amountInNano,
+        expirationTime: Date.now() + (expirationHours * 60 * 60 * 1000)
+    };
+};
+
 export const participateInBet = async (
     amount: number,
     choice: 'yes' | 'no'
 ) => {
     const contract = getBettingContract();
-    
-    // Convert amount to nanoTONs
     const amountInNano = toNano(amount.toString());
     
     return {
@@ -26,15 +39,37 @@ export const participateInBet = async (
     };
 };
 
+export const resolveBet = async (outcome: 'yes' | 'no') => {
+    const contract = getBettingContract();
+    return {
+        contractAddress: BETTING_CONTRACT_ADDRESS,
+        outcome
+    };
+};
+
 export const getBetStatus = async () => {
     const contract = getBettingContract();
-    
-    // In production, this would fetch actual contract state
-    return {
-        totalAmount: toNano('1000000'),
-        yesAmount: toNano('600000'),
-        noAmount: toNano('400000'),
-        status: 'active',
-        expirationTime: Date.now() + 86400000 // 24 hours from now
-    };
+    try {
+        const status = await contract.getStatus();
+        return {
+            totalAmount: status.totalAmount,
+            yesAmount: status.yesAmount,
+            noAmount: status.noAmount,
+            status: status.status,
+            expirationTime: status.expirationTime
+        };
+    } catch (error) {
+        console.error("Error fetching bet status:", error);
+        return null;
+    }
+};
+
+export const getParticipants = async () => {
+    const contract = getBettingContract();
+    try {
+        return await contract.getParticipants();
+    } catch (error) {
+        console.error("Error fetching participants:", error);
+        return null;
+    }
 };

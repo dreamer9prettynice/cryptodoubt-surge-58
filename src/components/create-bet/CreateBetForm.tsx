@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { useTonConnectUI } from "@tonconnect/ui-react";
+import { useToast } from "@/hooks/use-toast";
+import { createBet } from "@/contracts/betting";
 
-const betFormSchema = z.object({
+export const betFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   reason: z.string().min(10, "Reason must be at least 10 characters"),
   amount: z.number().min(1, "Amount must be greater than 0"),
@@ -29,6 +31,7 @@ interface CreateBetFormProps {
 
 export const CreateBetForm = ({ onSubmit }: CreateBetFormProps) => {
   const [tonConnectUI] = useTonConnectUI();
+  const { toast } = useToast();
 
   const form = useForm<BetFormValues>({
     resolver: zodResolver(betFormSchema),
@@ -40,9 +43,38 @@ export const CreateBetForm = ({ onSubmit }: CreateBetFormProps) => {
     },
   });
 
+  const handleSubmit = async (data: BetFormValues) => {
+    try {
+      const result = await createBet(data.title, data.amount, data.expiration);
+      
+      await tonConnectUI.sendTransaction({
+        validUntil: Date.now() + 5 * 60 * 1000,
+        messages: [
+          {
+            address: result.contractAddress,
+            amount: result.amount.toString(),
+          }
+        ]
+      });
+
+      toast({
+        title: "Success",
+        description: "Bet created successfully",
+      });
+
+      await onSubmit(data);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create bet",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { participateInBet } from "@/contracts/betting";
 
 interface BetParticipationModalProps {
   isOpen: boolean;
@@ -23,14 +25,14 @@ export const BetParticipationModal = ({
   onParticipate,
 }: BetParticipationModalProps) => {
   const [tonConnectUI] = useTonConnectUI();
+  const { toast } = useToast();
   const [choice, setChoice] = useState<string>("yes");
   const [amount, setAmount] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const calculatePotentialWinnings = () => {
     const betAmount = parseFloat(amount) || 0;
-    // Calculate based on current pool ratio
-    return (betAmount * 1.8).toFixed(2); // 80% return example
+    return (betAmount * 1.8).toFixed(2);
   };
 
   const handleSubmit = async () => {
@@ -38,10 +40,31 @@ export const BetParticipationModal = ({
     
     setIsSubmitting(true);
     try {
-      await onParticipate(choice as 'yes' | 'no', parseFloat(amount));
+      const result = await participateInBet(parseFloat(amount), choice as 'yes' | 'no');
+      
+      await tonConnectUI.sendTransaction({
+        validUntil: Date.now() + 5 * 60 * 1000,
+        messages: [
+          {
+            address: result.contractAddress,
+            amount: result.amount.toString(),
+          }
+        ]
+      });
+
+      await onParticipate(choice, parseFloat(amount));
+      toast({
+        title: "Success",
+        description: "Successfully participated in bet",
+      });
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error participating in bet:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to participate in bet",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
