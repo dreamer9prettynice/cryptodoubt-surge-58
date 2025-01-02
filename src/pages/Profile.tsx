@@ -7,8 +7,9 @@ import { useTonConnectUI } from "@tonconnect/ui-react";
 import { Address } from "@ton/core";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, Wallet } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { BettingHistory } from "@/components/profile/BettingHistory";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { useQuery } from "@tanstack/react-query";
 
 const Profile = () => {
@@ -21,7 +22,6 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Fetch user data using React Query
   const { data: userData } = useQuery({
     queryKey: ['user'],
     queryFn: async () => {
@@ -94,7 +94,6 @@ const Profile = () => {
         description: "Please check your email to verify your account.",
       });
       
-      // Switch back to sign in view
       setIsSignUp(false);
     } catch (error: any) {
       toast({
@@ -146,20 +145,8 @@ const Profile = () => {
         transition={{ duration: 0.5 }}
         className="max-w-lg mx-auto space-y-6"
       >
-        <div className="text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-betting-primary to-betting-accent bg-clip-text text-transparent animate-glow">
-            {isLoggedIn ? "Profile" : isSignUp ? "Create Account" : "Welcome Back"}
-          </h1>
-          <p className="text-betting-primary/60 mt-2">
-            {isLoggedIn
-              ? "Manage your betting profile"
-              : isSignUp
-              ? "Sign up to start betting"
-              : "Login to access your betting profile"}
-          </p>
-        </div>
+        {isLoggedIn && <ProfileHeader email={email} />}
 
-        {/* Wallet Connection Section */}
         <div className="backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
           <Button
             onClick={handleWalletAction}
@@ -179,7 +166,6 @@ const Profile = () => {
           </Button>
         </div>
 
-        {/* Authentication Section */}
         {!isLoggedIn && (
           <div className="space-y-4 backdrop-blur-xl bg-white/5 p-6 rounded-lg border border-betting-primary/20">
             <div className="space-y-2">
@@ -228,22 +214,7 @@ const Profile = () => {
           </div>
         )}
 
-        {/* Profile Section */}
-        {isLoggedIn && (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-betting-secondary/20 rounded-full mx-auto mb-4 border-2 border-betting-primary/20 relative group">
-                <Upload className="w-8 h-8 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-betting-primary/50 group-hover:text-betting-primary transition-colors" />
-              </div>
-              <h2 className="text-xl font-bold text-betting-primary">
-                {email}
-              </h2>
-            </div>
-            
-            {/* Add Betting History Component */}
-            {userData && <BettingHistory userId={userData.id} />}
-          </div>
-        )}
+        {isLoggedIn && userData && <BettingHistory userId={userData.id} />}
       </motion.div>
     </div>
   );

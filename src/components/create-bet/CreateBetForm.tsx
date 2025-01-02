@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2 } from "lucide-react";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,9 @@ export const betFormSchema = z.object({
   reason: z.string().min(10, "Reason must be at least 10 characters"),
   amount: z.number().min(1, "Amount must be greater than 0"),
   expiration: z.number().min(1, "Expiration must be at least 1 hour"),
+  choice: z.enum(["yes", "no"], {
+    required_error: "You must choose a side",
+  }),
 });
 
 type BetFormValues = z.infer<typeof betFormSchema>;
@@ -40,6 +44,7 @@ export const CreateBetForm = ({ onSubmit }: CreateBetFormProps) => {
       reason: "",
       amount: undefined,
       expiration: undefined,
+      choice: undefined,
     },
   });
 
@@ -105,6 +110,37 @@ export const CreateBetForm = ({ onSubmit }: CreateBetFormProps) => {
                   className="bg-betting-secondary/20 border-betting-primary/20"
                   {...field}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="choice"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your Side</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex space-x-4"
+                >
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <RadioGroupItem value="yes" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Yes</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <RadioGroupItem value="no" />
+                    </FormControl>
+                    <FormLabel className="font-normal">No</FormLabel>
+                  </FormItem>
+                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>
