@@ -1,8 +1,14 @@
 import { BettingContract } from './BettingContract';
 import { Address, toNano } from '@ton/core';
+import { TonClient } from '@ton/ton';
 
 // Using the deployed contract address
 const BETTING_CONTRACT_ADDRESS = 'EQevdolaf_AjNINQPmYWBWq9w1NWw1vQOFYuRqObrvrQB3';
+
+// Initialize TON Client
+const client = new TonClient({
+    endpoint: 'https://toncenter.com/api/v2/jsonRPC',
+});
 
 export const getBettingContract = () => {
     return new BettingContract(
@@ -50,7 +56,8 @@ export const resolveBet = async (outcome: 'yes' | 'no') => {
 export const getBetStatus = async () => {
     const contract = getBettingContract();
     try {
-        const status = await contract.getStatus();
+        const provider = client.provider();
+        const status = await contract.getStatus(provider);
         return {
             totalAmount: status.totalAmount,
             yesAmount: status.yesAmount,
@@ -67,7 +74,8 @@ export const getBetStatus = async () => {
 export const getParticipants = async () => {
     const contract = getBettingContract();
     try {
-        return await contract.getParticipants();
+        const provider = client.provider();
+        return await contract.getParticipants(provider);
     } catch (error) {
         console.error("Error fetching participants:", error);
         return null;
