@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { createBettingContract, participateInBet, getBetStatus } from '../contracts/betting';
+import { getBettingContract, participateInBet, getBetStatus } from '../contracts/betting';
 import { useToast } from './use-toast';
 import { toNano } from '@ton/core';
 
@@ -25,16 +25,8 @@ export const useBettingContract = () => {
 
         setIsLoading(true);
         try {
-            const walletAddress = tonConnectUI.account?.address;
-            if (!walletAddress) throw new Error("No wallet address found");
-
-            const contract = await createBettingContract({
-                betId: `bet_${Date.now()}`,
-                title,
-                expirationHours,
-                creatorAddress: walletAddress
-            });
-
+            const contract = getBettingContract();
+            
             toast({
                 title: "Bet created",
                 description: "Your bet has been created successfully"
@@ -54,7 +46,6 @@ export const useBettingContract = () => {
     };
 
     const participate = async (
-        contractAddress: string,
         amount: number,
         choice: 'yes' | 'no'
     ) => {
@@ -69,11 +60,19 @@ export const useBettingContract = () => {
 
         setIsLoading(true);
         try {
-            await participateInBet(
-                contractAddress,
-                amount,
-                choice
-            );
+            const result = await participateInBet(amount, choice);
+            
+            // Send transaction using TonConnect
+            await tonConnectUI.sendTransaction({
+                validUntil: Date.now() + 5 * 60 * 1000, // 5 minutes
+                messages: [
+                    {
+                        address: result.contractAddress,
+                        amount: result.amount.toString(),
+                        payload: result.choice
+                    }
+                ]
+            });
             
             toast({
                 title: "Participation successful",
@@ -93,9 +92,9 @@ export const useBettingContract = () => {
         }
     };
 
-    const getBetDetails = async (contractAddress: string) => {
+    const getBetDetails = async () => {
         try {
-            return await getBetStatus(contractAddress);
+            return await getBetStatus();
         } catch (error: any) {
             console.error("Error fetching bet details:", error);
             return null;

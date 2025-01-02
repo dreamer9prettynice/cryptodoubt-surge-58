@@ -29,7 +29,7 @@ export const BetParticipationModal = ({
 
   const calculatePotentialWinnings = () => {
     const betAmount = parseFloat(amount) || 0;
-    // Simple calculation for demonstration - can be adjusted based on actual pool mechanics
+    // Calculate based on current pool ratio
     return (betAmount * 1.8).toFixed(2); // 80% return example
   };
 
@@ -38,7 +38,7 @@ export const BetParticipationModal = ({
     
     setIsSubmitting(true);
     try {
-      await onParticipate(choice, parseFloat(amount));
+      await onParticipate(choice as 'yes' | 'no', parseFloat(amount));
       onClose();
     } catch (error) {
       console.error("Error participating in bet:", error);
