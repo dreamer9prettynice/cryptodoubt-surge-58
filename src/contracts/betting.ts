@@ -57,9 +57,7 @@ export const resolveBet = async (outcome: 'yes' | 'no') => {
 export const getBetStatus = async () => {
     const contract = getBettingContract();
     try {
-        const provider = client.provider({
-            timeout: 5000 // 5 seconds timeout
-        });
+        const provider = client.provider();
         const status = await contract.getStatus(provider);
         return {
             totalAmount: status.totalAmount,
@@ -77,9 +75,7 @@ export const getBetStatus = async () => {
 export const getParticipants = async () => {
     const contract = getBettingContract();
     try {
-        const provider = client.provider({
-            timeout: 5000 // 5 seconds timeout
-        });
+        const provider = client.provider();
         return await contract.getParticipants(provider);
     } catch (error) {
         console.error("Error fetching participants:", error);
