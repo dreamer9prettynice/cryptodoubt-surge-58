@@ -8,7 +8,7 @@ import {
     ContractState,
     SendMode,
     Transaction,
-    BitString
+    beginCell
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
 import { Buffer } from 'buffer';
@@ -16,8 +16,9 @@ import { Buffer } from 'buffer';
 export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async getState(): Promise<ContractState> {
         const block = await client.getLastBlock();
+        const contractAddress = Address.parse(process.env.BETTING_CONTRACT_ADDRESS || '');
         const state = await client.getAccount(
-            parseInt(process.env.BETTING_CONTRACT_ADDRESS || '0'),
+            contractAddress,
             block.last.seqno
         );
         
@@ -66,8 +67,9 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
 
     async get(method: string, args: any[]) {
         const block = await client.getLastBlock();
+        const contractAddress = Address.parse(process.env.BETTING_CONTRACT_ADDRESS || '');
         const result = await client.runMethod(
-            parseInt(process.env.BETTING_CONTRACT_ADDRESS || '0'),
+            contractAddress,
             method,
             args,
             block
@@ -85,15 +87,19 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         sendMode?: SendMode,
         body?: string | Cell
     }) {
-        const cell = new Cell();
+        let messageCell: Cell;
         if (typeof message.body === 'string') {
-            cell.bits.writeUint8(message.body.length);
-            cell.bits.writeString(message.body);
+            messageCell = beginCell()
+                .storeUint(0, 32)
+                .storeBuffer(Buffer.from(message.body))
+                .endCell();
         } else if (message.body instanceof Cell) {
-            const bodyBoc = message.body.toBoc();
-            cell.bits.writeBytes(bodyBoc);
+            messageCell = message.body;
+        } else {
+            messageCell = beginCell().endCell();
         }
-        await client.sendMessage(cell.toBoc());
+        
+        await client.sendMessage(messageCell.toBoc());
     },
 
     open<T extends Contract>(contract: T): OpenedContract<T> {
@@ -107,17 +113,18 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         limit: number = 100
     ): Promise<Transaction[]> {
         const transactions = await client.getAccountTransactions(
-            address.toRawString(),
+            address,
             lt.toString(),
             hash.toString('base64')
         );
+        
         return transactions.map(transaction => {
-            const tx = transaction.tx as Transaction;
+            const tx = transaction.tx;
             return {
                 ...tx,
                 lt: BigInt(tx.lt || '0'),
-                prevLt: tx.prevLt ? BigInt(tx.prevLt) : undefined
-            };
+                prevLt: undefined // Since prevLt is not available in the response
+            } as Transaction;
         });
     }
 });
