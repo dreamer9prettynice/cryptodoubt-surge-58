@@ -7,14 +7,17 @@ import {
     ContractProvider, 
     Sender, 
     SendMode,
-    toNano 
+    toNano,
+    TupleReader
 } from '@ton/core';
+import { TonClient4 } from '@ton/ton';
+import { BettingContract } from './BettingContract';
 
 // Using the deployed contract address
 const BETTING_CONTRACT_ADDRESS = 'EQevdolaf_AjNINQPmYWBWq9w1NWw1vQOFYuRqObrvrQB3';
 
 // Initialize TON Client with API key
-const client = new TonClient({
+const client = new TonClient4({
     endpoint: 'https://toncenter.com/api/v2/jsonRPC',
     apiKey: '4db8e92e6df1a9e32ae077c2fefd26b289f87dbd912fc02a17ac7f53dacb7abd'
 });
@@ -86,6 +89,17 @@ export const getBetStatus = async () => {
             },
             external: client.sendExternalMessage.bind(client),
             internal: client.sendExternalMessage.bind(client),
+            open: async () => {
+                return provider;
+            },
+            getTransactions: async (fromLt: bigint, fromHash: Buffer) => {
+                const transactions = await client.getTransactions(
+                    Address.parse(BETTING_CONTRACT_ADDRESS),
+                    fromLt,
+                    fromHash
+                );
+                return transactions;
+            }
         };
         
         const status = await contract.getStatus(provider);
@@ -126,6 +140,17 @@ export const getParticipants = async () => {
             },
             external: client.sendExternalMessage.bind(client),
             internal: client.sendExternalMessage.bind(client),
+            open: async () => {
+                return provider;
+            },
+            getTransactions: async (fromLt: bigint, fromHash: Buffer) => {
+                const transactions = await client.getTransactions(
+                    Address.parse(BETTING_CONTRACT_ADDRESS),
+                    fromLt,
+                    fromHash
+                );
+                return transactions;
+            }
         };
         return await contract.getParticipants(provider);
     } catch (error) {
