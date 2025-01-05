@@ -18,7 +18,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const block = await client.getLastBlock();
         const contractAddress = Address.parse(process.env.BETTING_CONTRACT_ADDRESS || '');
         const state = await client.getAccount(
-            parseInt(contractAddress.toString().split(':')[1], 16),
+            Address.parse(contractAddress.toString()),
             block.last.seqno
         );
         
@@ -69,7 +69,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const block = await client.getLastBlock();
         const contractAddress = Address.parse(process.env.BETTING_CONTRACT_ADDRESS || '');
         const result = await client.runMethod(
-            parseInt(contractAddress.toString().split(':')[1], 16),
+            Address.parse(contractAddress.toString()),
             method,
             args,
             block
@@ -114,7 +114,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     ): Promise<Transaction[]> {
         const transactions = await client.getAccountTransactions(
             address,
-            lt.toString(),
+            BigInt(lt).toString(),
             hash.toString('base64')
         );
         
@@ -123,7 +123,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
             return {
                 ...tx,
                 lt: BigInt(tx.lt || '0'),
-                prevLt: undefined // Since prevLt is not available in the response
+                prevLt: undefined
             } as Transaction;
         });
     }
