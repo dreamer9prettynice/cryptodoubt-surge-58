@@ -20,11 +20,11 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#e94560",
+          DEFAULT: "#D6BCFA", // Light purple
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#0f3460",
+          DEFAULT: "#D3E4FD", // Soft blue sea
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
@@ -49,9 +49,9 @@ export default {
         },
         betting: {
           dark: "#1a1a2e",
-          primary: "#e94560",
-          secondary: "#0f3460",
-          accent: "#533483",
+          primary: "#D6BCFA", // Light purple
+          secondary: "#D3E4FD", // Soft blue sea
+          accent: "#E5DEFF", // Soft purple accent
         },
       },
       borderRadius: {

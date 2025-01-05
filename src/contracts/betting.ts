@@ -8,7 +8,7 @@ const BETTING_CONTRACT_ADDRESS = 'EQevdolaf_AjNINQPmYWBWq9w1NWw1vQOFYuRqObrvrQB3
 // Initialize TON Client with API key
 const client = new TonClient({
     endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-    apiKey: 'your_api_key_here' // You should use an environment variable for this
+    apiKey: '4db8e92e6df1a9e32ae077c2fefd26b289f87dbd912fc02a17ac7f53dacb7abd'
 });
 
 export const getBettingContract = () => {
@@ -58,12 +58,21 @@ export const getBetStatus = async () => {
     const contract = getBettingContract();
     try {
         const provider: ContractProvider = {
-            getState: () => client.getContractState(Address.parse(BETTING_CONTRACT_ADDRESS)),
-            get: async (name, args) => {
+            getState: async () => {
+                const state = await client.getContractState(Address.parse(BETTING_CONTRACT_ADDRESS));
+                return {
+                    ...state,
+                    last: {
+                        lt: state.lastTransaction.lt,
+                        hash: state.lastTransaction.hash
+                    }
+                };
+            },
+            get: async (name: string, args: any[]) => {
                 const { stack } = await client.callGetMethod(
                     Address.parse(BETTING_CONTRACT_ADDRESS),
                     name,
-                    args
+                    args.map(arg => arg.toString())
                 );
                 return { stack };
             },
@@ -89,12 +98,21 @@ export const getParticipants = async () => {
     const contract = getBettingContract();
     try {
         const provider: ContractProvider = {
-            getState: () => client.getContractState(Address.parse(BETTING_CONTRACT_ADDRESS)),
-            get: async (name, args) => {
+            getState: async () => {
+                const state = await client.getContractState(Address.parse(BETTING_CONTRACT_ADDRESS));
+                return {
+                    ...state,
+                    last: {
+                        lt: state.lastTransaction.lt,
+                        hash: state.lastTransaction.hash
+                    }
+                };
+            },
+            get: async (name: string, args: any[]) => {
                 const { stack } = await client.callGetMethod(
                     Address.parse(BETTING_CONTRACT_ADDRESS),
                     name,
-                    args
+                    args.map(arg => arg.toString())
                 );
                 return { stack };
             },
