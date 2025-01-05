@@ -1,6 +1,6 @@
 import { BettingContract } from './BettingContract';
 import { Address, toNano } from '@ton/core';
-import { TonClient } from '@ton/ton';
+import { TonClient, ContractProvider } from '@ton/ton';
 
 // Using the deployed contract address
 const BETTING_CONTRACT_ADDRESS = 'EQevdolaf_AjNINQPmYWBWq9w1NWw1vQOFYuRqObrvrQB3';
@@ -57,7 +57,20 @@ export const resolveBet = async (outcome: 'yes' | 'no') => {
 export const getBetStatus = async () => {
     const contract = getBettingContract();
     try {
-        const provider = client;
+        const provider: ContractProvider = {
+            getState: () => client.getContractState(Address.parse(BETTING_CONTRACT_ADDRESS)),
+            get: async (name, args) => {
+                const { stack } = await client.callGetMethod(
+                    Address.parse(BETTING_CONTRACT_ADDRESS),
+                    name,
+                    args
+                );
+                return { stack };
+            },
+            external: client.sendExternalMessage.bind(client),
+            internal: client.sendExternalMessage.bind(client),
+        };
+        
         const status = await contract.getStatus(provider);
         return {
             totalAmount: status.totalAmount,
@@ -75,7 +88,19 @@ export const getBetStatus = async () => {
 export const getParticipants = async () => {
     const contract = getBettingContract();
     try {
-        const provider = client;
+        const provider: ContractProvider = {
+            getState: () => client.getContractState(Address.parse(BETTING_CONTRACT_ADDRESS)),
+            get: async (name, args) => {
+                const { stack } = await client.callGetMethod(
+                    Address.parse(BETTING_CONTRACT_ADDRESS),
+                    name,
+                    args
+                );
+                return { stack };
+            },
+            external: client.sendExternalMessage.bind(client),
+            internal: client.sendExternalMessage.bind(client),
+        };
         return await contract.getParticipants(provider);
     } catch (error) {
         console.error("Error fetching participants:", error);
