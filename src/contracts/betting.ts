@@ -1,16 +1,12 @@
 import { 
     Address, 
-    beginCell, 
     Cell, 
     Contract, 
-    contractAddress, 
     ContractProvider, 
     Sender, 
-    SendMode,
-    toNano,
-    TupleReader,
     OpenedContract,
-    Transaction
+    Transaction,
+    TupleReader
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
 import { BettingContract } from './BettingContract';
@@ -35,7 +31,7 @@ export const createBet = async (
     expirationHours: number
 ) => {
     const contract = getBettingContract();
-    const amountInNano = toNano(amount.toString());
+    const amountInNano = BigInt(amount);
     
     return {
         contractAddress: BETTING_CONTRACT_ADDRESS,
@@ -49,7 +45,7 @@ export const participateInBet = async (
     choice: 'yes' | 'no'
 ) => {
     const contract = getBettingContract();
-    const amountInNano = toNano(amount.toString());
+    const amountInNano = BigInt(amount);
     
     return {
         contractAddress: BETTING_CONTRACT_ADDRESS,
@@ -69,46 +65,66 @@ export const resolveBet = async (outcome: 'yes' | 'no') => {
 export const getBetStatus = async () => {
     const contract = getBettingContract();
     try {
-        const provider: ContractProvider = {
-            getState: async () => {
-                const state = await client.getState(Address.parse(BETTING_CONTRACT_ADDRESS));
+        const customProvider: ContractProvider = {
+            async getState() {
+                const state = await client.getAccountState(Address.parse(BETTING_CONTRACT_ADDRESS));
                 return {
-                    ...state,
+                    balance: state.balance,
                     last: {
                         lt: BigInt(state.lastTransaction?.lt || '0'),
-                        hash: state.lastTransaction?.hash || Buffer.from([])
-                    }
+                        hash: Buffer.from(state.lastTransaction?.hash || '')
+                    },
+                    state: state.state,
+                    code: state.code ? Buffer.from(state.code) : null,
+                    data: state.data ? Buffer.from(state.data) : null
                 };
             },
-            get: async (name: string, args: any[]) => {
+            async get(name: string, args: any[]) {
                 const result = await client.runMethod(
                     Address.parse(BETTING_CONTRACT_ADDRESS),
-                    name,
-                    args
+                    name
                 );
-                return { stack: result.stack };
+                return { 
+                    stack: new TupleReader(result.result)
+                };
             },
-            external: async (message) => {
-                await client.sendMessage(message);
+            async external(message: Cell) {
+                await client.sendFile(Buffer.from(message.toBoc()));
             },
-            internal: async (via, message) => {
-                await client.sendMessage(message);
+            async internal(via: Sender, message: { 
+                value: string | bigint,
+                bounce?: boolean,
+                body?: string | Cell
+            }) {
+                const cell = new Cell();
+                if (message.body instanceof Cell) {
+                    cell.writeCell(message.body);
+                } else if (message.body) {
+                    cell.writeString(message.body);
+                }
+                await client.sendFile(Buffer.from(cell.toBoc()));
             },
-            open: async <T extends Contract>(contract: T): Promise<OpenedContract<T>> => {
+            async open<T extends Contract>(contract: T): Promise<OpenedContract<T>> {
                 return contract as OpenedContract<T>;
             },
-            getTransactions: async (
+            async getTransactions(
                 address: Address,
                 lt: bigint,
-                hash: Buffer,
-                limit?: number
-            ): Promise<Transaction[]> => {
-                const txs = await client.getTransactions(address, lt, hash, limit);
-                return txs as Transaction[];
+                hash: Buffer
+            ): Promise<Transaction[]> {
+                const txs = await client.getTransactions(
+                    address,
+                    {
+                        lt: lt.toString(),
+                        hash: hash.toString('hex')
+                    },
+                    10
+                );
+                return txs as unknown as Transaction[];
             }
         };
         
-        const status = await contract.getStatus(provider);
+        const status = await contract.getStatus(customProvider);
         return {
             totalAmount: status.totalAmount,
             yesAmount: status.yesAmount,
@@ -125,45 +141,65 @@ export const getBetStatus = async () => {
 export const getParticipants = async () => {
     const contract = getBettingContract();
     try {
-        const provider: ContractProvider = {
-            getState: async () => {
-                const state = await client.getState(Address.parse(BETTING_CONTRACT_ADDRESS));
+        const customProvider: ContractProvider = {
+            async getState() {
+                const state = await client.getAccountState(Address.parse(BETTING_CONTRACT_ADDRESS));
                 return {
-                    ...state,
+                    balance: state.balance,
                     last: {
                         lt: BigInt(state.lastTransaction?.lt || '0'),
-                        hash: state.lastTransaction?.hash || Buffer.from([])
-                    }
+                        hash: Buffer.from(state.lastTransaction?.hash || '')
+                    },
+                    state: state.state,
+                    code: state.code ? Buffer.from(state.code) : null,
+                    data: state.data ? Buffer.from(state.data) : null
                 };
             },
-            get: async (name: string, args: any[]) => {
+            async get(name: string, args: any[]) {
                 const result = await client.runMethod(
                     Address.parse(BETTING_CONTRACT_ADDRESS),
-                    name,
-                    args
+                    name
                 );
-                return { stack: result.stack };
+                return { 
+                    stack: new TupleReader(result.result)
+                };
             },
-            external: async (message) => {
-                await client.sendMessage(message);
+            async external(message: Cell) {
+                await client.sendFile(Buffer.from(message.toBoc()));
             },
-            internal: async (via, message) => {
-                await client.sendMessage(message);
+            async internal(via: Sender, message: { 
+                value: string | bigint,
+                bounce?: boolean,
+                body?: string | Cell
+            }) {
+                const cell = new Cell();
+                if (message.body instanceof Cell) {
+                    cell.writeCell(message.body);
+                } else if (message.body) {
+                    cell.writeString(message.body);
+                }
+                await client.sendFile(Buffer.from(cell.toBoc()));
             },
-            open: async <T extends Contract>(contract: T): Promise<OpenedContract<T>> => {
+            async open<T extends Contract>(contract: T): Promise<OpenedContract<T>> {
                 return contract as OpenedContract<T>;
             },
-            getTransactions: async (
+            async getTransactions(
                 address: Address,
                 lt: bigint,
-                hash: Buffer,
-                limit?: number
-            ): Promise<Transaction[]> => {
-                const txs = await client.getTransactions(address, lt, hash, limit);
-                return txs as Transaction[];
+                hash: Buffer
+            ): Promise<Transaction[]> {
+                const txs = await client.getTransactions(
+                    address,
+                    {
+                        lt: lt.toString(),
+                        hash: hash.toString('hex')
+                    },
+                    10
+                );
+                return txs as unknown as Transaction[];
             }
         };
-        return await contract.getParticipants(provider);
+        return await contract.getParticipants(customProvider);
     } catch (error) {
         console.error("Error fetching participants:", error);
         return null;
