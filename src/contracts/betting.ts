@@ -1,6 +1,14 @@
-import { BettingContract } from './BettingContract';
-import { Address, toNano } from '@ton/core';
-import { TonClient, ContractProvider } from '@ton/ton';
+import { 
+    Address, 
+    beginCell, 
+    Cell, 
+    Contract, 
+    contractAddress, 
+    ContractProvider, 
+    Sender, 
+    SendMode,
+    toNano 
+} from '@ton/core';
 
 // Using the deployed contract address
 const BETTING_CONTRACT_ADDRESS = 'EQevdolaf_AjNINQPmYWBWq9w1NWw1vQOFYuRqObrvrQB3';
@@ -63,7 +71,7 @@ export const getBetStatus = async () => {
                 return {
                     ...state,
                     last: {
-                        lt: state.lastTransaction.lt,
+                        lt: BigInt(state.lastTransaction.lt),
                         hash: state.lastTransaction.hash
                     }
                 };
@@ -103,7 +111,7 @@ export const getParticipants = async () => {
                 return {
                     ...state,
                     last: {
-                        lt: state.lastTransaction.lt,
+                        lt: BigInt(state.lastTransaction.lt),
                         hash: state.lastTransaction.hash
                     }
                 };
