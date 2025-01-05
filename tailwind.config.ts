@@ -27,6 +27,10 @@ export default {
           DEFAULT: "#D3E4FD", // Soft blue sea
           foreground: "hsl(var(--secondary-foreground))",
         },
+        accent: {
+          DEFAULT: "#33C3F0", // Night sky blue
+          foreground: "hsl(var(--accent-foreground))",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
@@ -34,10 +38,6 @@ export default {
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -51,7 +51,7 @@ export default {
           dark: "#1a1a2e",
           primary: "#D6BCFA", // Light purple
           secondary: "#D3E4FD", // Soft blue sea
-          accent: "#E5DEFF", // Soft purple accent
+          accent: "#33C3F0", // Night sky blue
         },
       },
       borderRadius: {
