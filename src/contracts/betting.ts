@@ -6,7 +6,9 @@ import {
     Sender, 
     OpenedContract,
     Transaction,
-    TupleReader
+    TupleReader,
+    TupleItem,
+    SendMode
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
 import { BettingContract } from './BettingContract';
@@ -67,42 +69,48 @@ export const getBetStatus = async () => {
     try {
         const customProvider: ContractProvider = {
             async getState() {
-                const state = await client.getAccountState(Address.parse(BETTING_CONTRACT_ADDRESS));
+                const state = await client.getAccount(Address.parse(BETTING_CONTRACT_ADDRESS));
                 return {
                     balance: state.balance,
                     last: {
-                        lt: BigInt(state.lastTransaction?.lt || '0'),
-                        hash: Buffer.from(state.lastTransaction?.hash || '')
+                        lt: BigInt(state.last?.lt || '0'),
+                        hash: Buffer.from(state.last?.hash || '')
                     },
-                    state: state.state,
-                    code: state.code ? Buffer.from(state.code) : null,
-                    data: state.data ? Buffer.from(state.data) : null
+                    state: state.account.state,
+                    code: state.account.code ? Cell.fromBoc(Buffer.from(state.account.code, 'base64'))[0] : null,
+                    data: state.account.data ? Cell.fromBoc(Buffer.from(state.account.data, 'base64'))[0] : null
                 };
             },
             async get(name: string, args: any[]) {
                 const result = await client.runMethod(
                     Address.parse(BETTING_CONTRACT_ADDRESS),
-                    name
+                    name,
+                    args
                 );
                 return { 
-                    stack: new TupleReader(result.result)
+                    stack: result.reader
                 };
             },
             async external(message: Cell) {
-                await client.sendFile(Buffer.from(message.toBoc()));
+                const boc = message.toBoc();
+                await client.sendMessage(boc);
             },
             async internal(via: Sender, message: { 
                 value: string | bigint,
                 bounce?: boolean,
+                sendMode?: SendMode,
                 body?: string | Cell
             }) {
-                const cell = new Cell();
+                let cell: Cell;
                 if (message.body instanceof Cell) {
-                    cell.writeCell(message.body);
+                    cell = message.body;
                 } else if (message.body) {
-                    cell.writeString(message.body);
+                    cell = new Cell();
+                    cell.bits.writeString(message.body);
+                } else {
+                    cell = new Cell();
                 }
-                await client.sendFile(Buffer.from(cell.toBoc()));
+                await client.sendMessage(cell.toBoc());
             },
             async open<T extends Contract>(contract: T): Promise<OpenedContract<T>> {
                 return contract as OpenedContract<T>;
@@ -110,15 +118,14 @@ export const getBetStatus = async () => {
             async getTransactions(
                 address: Address,
                 lt: bigint,
-                hash: Buffer
+                hash: Buffer,
+                limit?: number
             ): Promise<Transaction[]> {
                 const txs = await client.getTransactions(
                     address,
-                    {
-                        lt: lt.toString(),
-                        hash: hash.toString('hex')
-                    },
-                    10
+                    lt,
+                    hash,
+                    limit || 10
                 );
                 return txs as unknown as Transaction[];
             }
@@ -143,42 +150,48 @@ export const getParticipants = async () => {
     try {
         const customProvider: ContractProvider = {
             async getState() {
-                const state = await client.getAccountState(Address.parse(BETTING_CONTRACT_ADDRESS));
+                const state = await client.getAccount(Address.parse(BETTING_CONTRACT_ADDRESS));
                 return {
                     balance: state.balance,
                     last: {
-                        lt: BigInt(state.lastTransaction?.lt || '0'),
-                        hash: Buffer.from(state.lastTransaction?.hash || '')
+                        lt: BigInt(state.last?.lt || '0'),
+                        hash: Buffer.from(state.last?.hash || '')
                     },
-                    state: state.state,
-                    code: state.code ? Buffer.from(state.code) : null,
-                    data: state.data ? Buffer.from(state.data) : null
+                    state: state.account.state,
+                    code: state.account.code ? Cell.fromBoc(Buffer.from(state.account.code, 'base64'))[0] : null,
+                    data: state.account.data ? Cell.fromBoc(Buffer.from(state.account.data, 'base64'))[0] : null
                 };
             },
             async get(name: string, args: any[]) {
                 const result = await client.runMethod(
                     Address.parse(BETTING_CONTRACT_ADDRESS),
-                    name
+                    name,
+                    args
                 );
                 return { 
-                    stack: new TupleReader(result.result)
+                    stack: result.reader
                 };
             },
             async external(message: Cell) {
-                await client.sendFile(Buffer.from(message.toBoc()));
+                const boc = message.toBoc();
+                await client.sendMessage(boc);
             },
             async internal(via: Sender, message: { 
                 value: string | bigint,
                 bounce?: boolean,
+                sendMode?: SendMode,
                 body?: string | Cell
             }) {
-                const cell = new Cell();
+                let cell: Cell;
                 if (message.body instanceof Cell) {
-                    cell.writeCell(message.body);
+                    cell = message.body;
                 } else if (message.body) {
-                    cell.writeString(message.body);
+                    cell = new Cell();
+                    cell.bits.writeString(message.body);
+                } else {
+                    cell = new Cell();
                 }
-                await client.sendFile(Buffer.from(cell.toBoc()));
+                await client.sendMessage(cell.toBoc());
             },
             async open<T extends Contract>(contract: T): Promise<OpenedContract<T>> {
                 return contract as OpenedContract<T>;
@@ -186,15 +199,14 @@ export const getParticipants = async () => {
             async getTransactions(
                 address: Address,
                 lt: bigint,
-                hash: Buffer
+                hash: Buffer,
+                limit?: number
             ): Promise<Transaction[]> {
                 const txs = await client.getTransactions(
                     address,
-                    {
-                        lt: lt.toString(),
-                        hash: hash.toString('hex')
-                    },
-                    10
+                    lt,
+                    hash,
+                    limit || 10
                 );
                 return txs as unknown as Transaction[];
             }
