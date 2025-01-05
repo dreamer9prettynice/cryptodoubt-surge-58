@@ -6,16 +6,18 @@ import {
     Sender, 
     OpenedContract,
     ContractState,
-    SendMode
+    SendMode,
+    Transaction
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
 import { Buffer } from 'buffer';
 
 export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async getState(): Promise<ContractState> {
+        const block = await client.getLastBlock();
         const state = await client.getAccount(
             Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
-            await client.getLastBlock()
+            block
         );
         
         if (!state.account.state) {
@@ -44,26 +46,30 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
             };
         }
 
-        return {
-            balance: BigInt(state.account.balance.coins),
-            last: {
-                lt: BigInt(state.account.last?.lt || '0'),
-                hash: Buffer.from(state.account.last?.hash || '', 'base64')
-            },
-            state: {
-                type: 'frozen',
-                stateHash: Buffer.from(state.account.state.stateHash, 'base64')
-            }
-        };
+        if (state.account.state.type === 'frozen') {
+            return {
+                balance: BigInt(state.account.balance.coins),
+                last: {
+                    lt: BigInt(state.account.last?.lt || '0'),
+                    hash: Buffer.from(state.account.last?.hash || '', 'base64')
+                },
+                state: {
+                    type: 'frozen',
+                    stateHash: Buffer.from(state.account.state.stateHash, 'base64')
+                }
+            };
+        }
+
+        throw new Error('Invalid account state');
     },
 
     async get(method: string, args: any[]) {
-        const lastBlock = await client.getLastBlock();
+        const block = await client.getLastBlock();
         const result = await client.runMethod(
             Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
             method,
             args,
-            lastBlock
+            block
         );
         return { stack: result.reader };
     },
@@ -80,14 +86,34 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     }) {
         const cell = new Cell();
         if (typeof message.body === 'string') {
-            cell.bits.writeString(message.body);
+            cell.bits.writeUint8String(message.body);
         } else if (message.body instanceof Cell) {
-            cell.bits.writeBytes(message.body.toBoc());
+            cell.bits.writeBuffer(Buffer.from(message.body.toBoc()));
         }
         await client.sendMessage(cell.toBoc());
     },
 
     open<T extends Contract>(contract: T): OpenedContract<T> {
         return contract as OpenedContract<T>;
+    },
+
+    async getTransactions(
+        address: Address,
+        lt: bigint,
+        hash: Buffer,
+        limit: number = 100
+    ): Promise<Transaction[]> {
+        const block = await client.getLastBlock();
+        const transactions = await client.getAccountTransactions(
+            address,
+            lt.toString(),
+            hash.toString('base64'),
+            limit
+        );
+        return transactions.map(tx => ({
+            ...tx,
+            lt: BigInt(tx.lt),
+            prevLt: tx.prevLt ? BigInt(tx.prevLt) : undefined
+        })) as unknown as Transaction[];
     }
 });
