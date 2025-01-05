@@ -16,8 +16,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async getState(): Promise<ContractState> {
         const block = await client.getLastBlock();
         const state = await client.getAccount(
-            Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
-            block
+            process.env.BETTING_CONTRACT_ADDRESS || '',
+            block.last.seqno
         );
         
         if (!state.account.state) {
@@ -66,7 +66,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async get(method: string, args: any[]) {
         const block = await client.getLastBlock();
         const result = await client.runMethod(
-            Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
+            process.env.BETTING_CONTRACT_ADDRESS || '',
             method,
             args,
             block
@@ -86,9 +86,9 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     }) {
         const cell = new Cell();
         if (typeof message.body === 'string') {
-            cell.bits.writeUint8String(message.body);
+            cell.bits.writeString(message.body);
         } else if (message.body instanceof Cell) {
-            cell.bits.writeBuffer(Buffer.from(message.body.toBoc()));
+            cell.writeCell(message.body);
         }
         await client.sendMessage(cell.toBoc());
     },
@@ -103,17 +103,15 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         hash: Buffer,
         limit: number = 100
     ): Promise<Transaction[]> {
-        const block = await client.getLastBlock();
         const transactions = await client.getAccountTransactions(
-            address,
+            address.toString(),
             lt.toString(),
-            hash.toString('base64'),
-            limit
+            hash.toString('base64')
         );
-        return transactions.map(tx => ({
-            ...tx,
-            lt: BigInt(tx.lt),
-            prevLt: tx.prevLt ? BigInt(tx.prevLt) : undefined
+        return transactions.map(transaction => ({
+            ...transaction.tx,
+            lt: BigInt(transaction.tx.lt || '0'),
+            prevLt: transaction.tx.prevLt ? BigInt(transaction.tx.prevLt) : undefined
         })) as unknown as Transaction[];
     }
 });
