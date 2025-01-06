@@ -20,15 +20,15 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#D6BCFA", // Light purple
+          DEFAULT: "#B8860B", // Dark golden rod
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#D3E4FD", // Soft blue sea
+          DEFAULT: "#4169E1", // Royal blue
           foreground: "hsl(var(--secondary-foreground))",
         },
         accent: {
-          DEFAULT: "#33C3F0", // Night sky blue
+          DEFAULT: "#33C3F0", // Night sky blue (keeping this as requested)
           foreground: "hsl(var(--accent-foreground))",
         },
         destructive: {
@@ -49,8 +49,8 @@ export default {
         },
         betting: {
           dark: "#1a1a2e",
-          primary: "#D6BCFA", // Light purple
-          secondary: "#D3E4FD", // Soft blue sea
+          primary: "#B8860B", // Dark golden rod
+          secondary: "#4169E1", // Royal blue
           accent: "#33C3F0", // Night sky blue
         },
       },
