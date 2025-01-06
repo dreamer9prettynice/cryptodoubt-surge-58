@@ -28,7 +28,7 @@ export default {
           foreground: "hsl(var(--secondary-foreground))",
         },
         accent: {
-          DEFAULT: "#33C3F0", // Night sky blue (keeping this as requested)
+          DEFAULT: "#0EA5E9", // Deep glowing blue (Ocean Blue)
           foreground: "hsl(var(--accent-foreground))",
         },
         destructive: {
@@ -51,7 +51,7 @@ export default {
           dark: "#1a1a2e",
           primary: "#B8860B", // Dark golden rod
           secondary: "#4169E1", // Royal blue
-          accent: "#33C3F0", // Night sky blue
+          accent: "#0EA5E9", // Deep glowing blue (Ocean Blue)
         },
       },
       borderRadius: {
