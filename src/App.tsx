@@ -9,24 +9,34 @@ import Bets from "./pages/Bets";
 import Create from "./pages/Create";
 import Profile from "./pages/Profile";
 
-const queryClient = new QueryClient();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <div className="min-h-screen bg-betting-dark">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/bets" element={<Bets />} />
-          <Route path="/create" element={<Create />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-        <BottomNav />
-      </div>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <div className="min-h-screen bg-betting-dark">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/bets" element={<Bets />} />
+            <Route path="/create" element={<Create />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+          <BottomNav />
+        </div>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
