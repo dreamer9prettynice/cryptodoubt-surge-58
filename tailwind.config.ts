@@ -20,15 +20,15 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#B8860B", // Dark golden rod
+          DEFAULT: "#D6BCFA", // Light purple
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#4169E1", // Royal blue
+          DEFAULT: "#D3E4FD", // Soft blue sea
           foreground: "hsl(var(--secondary-foreground))",
         },
         accent: {
-          DEFAULT: "#0EA5E9", // Deep glowing blue (Ocean Blue)
+          DEFAULT: "#33C3F0", // Night sky blue
           foreground: "hsl(var(--accent-foreground))",
         },
         destructive: {
@@ -49,9 +49,9 @@ export default {
         },
         betting: {
           dark: "#1a1a2e",
-          primary: "#B8860B", // Dark golden rod
-          secondary: "#4169E1", // Royal blue
-          accent: "#0EA5E9", // Deep glowing blue (Ocean Blue)
+          primary: "#D6BCFA", // Light purple
+          secondary: "#D3E4FD", // Soft blue sea
+          accent: "#33C3F0", // Night sky blue
         },
       },
       borderRadius: {
