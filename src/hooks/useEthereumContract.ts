@@ -6,20 +6,20 @@ const CONTRACT_ADDRESS = 'YOUR_CONTRACT_ADDRESS';
 
 export const useEthereumContract = () => {
   const { data: bets, isLoading: isLoadingBets } = useContractRead({
-    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: contractAbi,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     functionName: 'getAllBets',
   });
 
-  const { writeAsync: createBet } = useContractWrite({
-    address: CONTRACT_ADDRESS as `0x${string}`,
+  const { write: createBet } = useContractWrite({
     abi: contractAbi,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     functionName: 'createBet',
   });
 
-  const { writeAsync: participateInBet } = useContractWrite({
-    address: CONTRACT_ADDRESS as `0x${string}`,
+  const { write: participateInBet } = useContractWrite({
     abi: contractAbi,
+    address: CONTRACT_ADDRESS as `0x${string}`,
     functionName: 'participateInBet',
   });
 
@@ -29,10 +29,9 @@ export const useEthereumContract = () => {
     expirationHours: number
   ) => {
     try {
-      const tx = await createBet({
+      await createBet({
         args: [title, parseEther(amount.toString()), BigInt(expirationHours * 3600)],
       });
-      return tx;
     } catch (error) {
       console.error('Error creating bet:', error);
       throw error;
@@ -45,10 +44,9 @@ export const useEthereumContract = () => {
     amount: number
   ) => {
     try {
-      const tx = await participateInBet({
+      await participateInBet({
         args: [BigInt(betId), choice, parseEther(amount.toString())],
       });
-      return tx;
     } catch (error) {
       console.error('Error participating in bet:', error);
       throw error;

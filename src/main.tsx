@@ -4,9 +4,8 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { BrowserRouter } from 'react-router-dom';
-import { createWeb3Modal } from '@web3modal/wagmi/react';
-import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
-import { WagmiProvider } from 'wagmi';
+import { createWeb3Modal } from '@web3modal/wagmi';
+import { WagmiProvider, createConfig, http } from 'wagmi';
 import { arbitrum, mainnet } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -20,10 +19,12 @@ const metadata = {
 };
 
 const chains = [mainnet, arbitrum];
-const config = defaultWagmiConfig({
+const config = createConfig({
   chains,
-  projectId,
-  metadata,
+  transports: {
+    [mainnet.id]: http(),
+    [arbitrum.id]: http(),
+  },
 });
 
 createWeb3Modal({ wagmiConfig: config, projectId, chains });
