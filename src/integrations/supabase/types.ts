@@ -12,27 +12,33 @@ export type Database = {
       bet_participants: {
         Row: {
           amount: number
-          bet_id: string
+          bet_id: string | null
           choice: string
-          created_at: string
+          created_at: string | null
           id: string
-          user_id: string
+          participation_tx_hash: string | null
+          user_id: string | null
+          wallet_address: string | null
         }
         Insert: {
           amount: number
-          bet_id: string
+          bet_id?: string | null
           choice: string
-          created_at?: string
+          created_at?: string | null
           id?: string
-          user_id: string
+          participation_tx_hash?: string | null
+          user_id?: string | null
+          wallet_address?: string | null
         }
         Update: {
           amount?: number
-          bet_id?: string
+          bet_id?: string | null
           choice?: string
-          created_at?: string
+          created_at?: string | null
           id?: string
-          user_id?: string
+          participation_tx_hash?: string | null
+          user_id?: string | null
+          wallet_address?: string | null
         }
         Relationships: [
           {
@@ -42,140 +48,68 @@ export type Database = {
             referencedRelation: "bets"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "bet_participants_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       bets: {
         Row: {
-          commission_amount: number | null
-          commission_percentage: number | null
           contract_address: string | null
-          created_at: string
-          creator_id: string
+          created_at: string | null
+          creation_tx_hash: string | null
+          creator_id: string | null
+          creator_wallet: string | null
           expiration_time: string
+          fee_percentage: number
           id: string
-          no_amount: number | null
-          pool_address: string | null
+          no_amount: number
+          pool_address: string
+          pool_amount: number
           reason: string
           status: string | null
           title: string
           total_amount: number
+          updated_at: string | null
           winner: string | null
-          yes_amount: number | null
+          yes_amount: number
         }
         Insert: {
-          commission_amount?: number | null
-          commission_percentage?: number | null
           contract_address?: string | null
-          created_at?: string
-          creator_id: string
+          created_at?: string | null
+          creation_tx_hash?: string | null
+          creator_id?: string | null
+          creator_wallet?: string | null
           expiration_time: string
+          fee_percentage?: number
           id?: string
-          no_amount?: number | null
-          pool_address?: string | null
+          no_amount?: number
+          pool_address?: string
+          pool_amount?: number
           reason: string
           status?: string | null
           title: string
           total_amount: number
+          updated_at?: string | null
           winner?: string | null
-          yes_amount?: number | null
+          yes_amount?: number
         }
         Update: {
-          commission_amount?: number | null
-          commission_percentage?: number | null
           contract_address?: string | null
-          created_at?: string
-          creator_id?: string
+          created_at?: string | null
+          creation_tx_hash?: string | null
+          creator_id?: string | null
+          creator_wallet?: string | null
           expiration_time?: string
+          fee_percentage?: number
           id?: string
-          no_amount?: number | null
-          pool_address?: string | null
+          no_amount?: number
+          pool_address?: string
+          pool_amount?: number
           reason?: string
           status?: string | null
           title?: string
           total_amount?: number
+          updated_at?: string | null
           winner?: string | null
-          yes_amount?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bets_creator_id_fkey"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      "dreaming in space": {
-        Row: {
-          created_at: string
-          id: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
-        }
-        Relationships: []
-      }
-      feeling: {
-        Row: {
-          created_at: string
-          id: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          id: string
-          nft_image: string | null
-          profile_image: string | null
-          total_bets_participated: number | null
-          total_bets_won: number | null
-          username: string
-          wallet_address: string | null
-          wallet_balance: number | null
-        }
-        Insert: {
-          created_at?: string
-          id: string
-          nft_image?: string | null
-          profile_image?: string | null
-          total_bets_participated?: number | null
-          total_bets_won?: number | null
-          username: string
-          wallet_address?: string | null
-          wallet_balance?: number | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          nft_image?: string | null
-          profile_image?: string | null
-          total_bets_participated?: number | null
-          total_bets_won?: number | null
-          username?: string
-          wallet_address?: string | null
-          wallet_balance?: number | null
+          yes_amount?: number
         }
         Relationships: []
       }
@@ -184,10 +118,42 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      apply_fee_and_update_pool: {
+        Args: {
+          p_amount: number
+          p_fee_percentage: number
+        }
+        Returns: number
+      }
+      calculate_winner_share: {
+        Args: {
+          bet_amount: number
+          total_winning_side_amount: number
+          total_pool_amount: number
+        }
+        Returns: number
+      }
+      distribute_bet_winnings: {
+        Args: {
+          p_bet_id: string
+          p_winning_side: string
+        }
+        Returns: {
+          wallet_address: string
+          winning_amount: number
+        }[]
+      }
+      increment_bet_amount: {
+        Args: {
+          p_bet_id: string
+          p_amount: number
+          p_column: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      bet_status: "active" | "completed" | "cancelled"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
