@@ -9,6 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+type BetParticipant = Database['public']['Tables']['bet_participants']['Row'] & {
+  bets: Database['public']['Tables']['bets']['Row'] | null
+};
 
 export const BettingHistory = ({ userId }: { userId: string }) => {
   const { data: bets, isLoading } = useQuery({
@@ -30,7 +35,7 @@ export const BettingHistory = ({ userId }: { userId: string }) => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as BetParticipant[];
     },
     enabled: !!userId,
   });

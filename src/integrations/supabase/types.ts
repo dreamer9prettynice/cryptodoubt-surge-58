@@ -9,7 +9,119 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bet_participants: {
+        Row: {
+          amount: number
+          bet_id: string | null
+          choice: string
+          created_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          bet_id?: string | null
+          choice: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          bet_id?: string | null
+          choice?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bet_participants_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bet_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bets: {
+        Row: {
+          contract_address: string
+          created_at: string
+          creator_id: string | null
+          expiration_time: string
+          id: string
+          pool_address: string
+          reason: string | null
+          status: string
+          title: string
+          total_amount: number
+          winner: string | null
+        }
+        Insert: {
+          contract_address: string
+          created_at?: string
+          creator_id?: string | null
+          expiration_time: string
+          id?: string
+          pool_address: string
+          reason?: string | null
+          status?: string
+          title: string
+          total_amount?: number
+          winner?: string | null
+        }
+        Update: {
+          contract_address?: string
+          created_at?: string
+          creator_id?: string | null
+          expiration_time?: string
+          id?: string
+          pool_address?: string
+          reason?: string | null
+          status?: string
+          title?: string
+          total_amount?: number
+          winner?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bets_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

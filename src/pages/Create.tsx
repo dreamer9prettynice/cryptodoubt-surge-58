@@ -4,6 +4,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTonConnectUI } from "@tonconnect/ui-react";
 import { CreateBetForm } from "@/components/create-bet/CreateBetForm";
+import { Database } from "@/integrations/supabase/types";
+
+type Bet = Database['public']['Tables']['bets']['Insert'];
 
 const Create = () => {
   const { toast } = useToast();
@@ -60,17 +63,20 @@ const Create = () => {
       const expirationDate = new Date();
       expirationDate.setHours(expirationDate.getHours() + data.expiration);
 
-      // After successful transaction, create the bet
-      const { error } = await supabase.from("bets").insert({
+      const betData: Bet = {
         creator_id: user.id,
         title: data.title,
         reason: data.reason,
         expiration_time: expirationDate.toISOString(),
         total_amount: data.amount,
-        // In production, these would come from the smart contract
         contract_address: "simulated_contract_address",
         pool_address: "simulated_pool_address",
-      });
+      };
+
+      // After successful transaction, create the bet
+      const { error } = await supabase
+        .from("bets")
+        .insert(betData);
 
       if (error) throw error;
 
