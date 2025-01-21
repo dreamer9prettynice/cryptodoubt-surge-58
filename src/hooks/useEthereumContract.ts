@@ -11,15 +11,11 @@ export const useEthereumContract = () => {
     functionName: 'getAllBets',
   });
 
-  const { writeAsync: createBet } = useContractWrite({
-    address: CONTRACT_ADDRESS as `0x${string}`,
-    abi: contractAbi,
+  const { write: createBet } = useContractWrite({
     functionName: 'createBet',
   });
 
-  const { writeAsync: participateInBet } = useContractWrite({
-    address: CONTRACT_ADDRESS as `0x${string}`,
-    abi: contractAbi,
+  const { write: participateInBet } = useContractWrite({
     functionName: 'participateInBet',
   });
 
@@ -29,7 +25,7 @@ export const useEthereumContract = () => {
     expirationHours: number
   ) => {
     try {
-      const tx = await createBet({
+      const tx = await createBet?.({
         args: [title, parseEther(amount.toString()), BigInt(expirationHours * 3600)],
       });
       return tx;
@@ -45,7 +41,7 @@ export const useEthereumContract = () => {
     amount: number
   ) => {
     try {
-      const tx = await participateInBet({
+      const tx = await participateInBet?.({
         args: [BigInt(betId), choice, parseEther(amount.toString())],
       });
       return tx;
