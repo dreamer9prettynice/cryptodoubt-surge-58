@@ -1,13 +1,4 @@
-import { 
-    Address, 
-    Cell, 
-    Contract, 
-    ContractProvider, 
-    Sender, 
-    OpenedContract,
-    Transaction,
-    SendMode
-} from '@ton/core';
+import { Address } from '@ton/core';
 
 export interface BetStatus {
     totalAmount: bigint;
@@ -24,11 +15,22 @@ export interface BetResult {
     expirationTime?: number;
 }
 
-export interface CustomProvider extends ContractProvider {
-    getTransactions(
-        address: Address,
-        lt: bigint,
-        hash: Buffer,
-        limit?: number
-    ): Promise<Transaction[]>;
+export interface BetInfo {
+    id: number;
+    totalYesAmount: bigint;
+    totalNoAmount: bigint;
+    endTime: number;
+    isResolved: boolean;
+}
+
+export interface UserBetAmount {
+    yesAmount: bigint;
+    noAmount: bigint;
+}
+
+export interface CustomProvider {
+    getState(): Promise<any>;
+    get(method: string, args: any[]): Promise<any>;
+    external(message: any): Promise<void>;
+    internal(via: any, message: any): Promise<void>;
 }

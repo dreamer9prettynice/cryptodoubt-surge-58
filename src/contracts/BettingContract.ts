@@ -1,118 +1,24 @@
-import { 
-    Address, 
-    beginCell, 
-    Cell, 
-    Contract, 
-    contractAddress, 
-    ContractProvider, 
-    Sender, 
-    SendMode,
-    toNano 
-} from '@ton/core';
-
-export type BettingConfig = {
-    betId: string;
-    title: string;
-    expirationTime: number;
-    creatorAddress: Address;
-};
+import { Address, Contract, ContractProvider } from '@ton/core';
 
 export class BettingContract implements Contract {
-    constructor(
-        readonly address: Address,
-        readonly init?: { code: Cell; data: Cell }
-    ) {}
+    constructor(readonly address: Address) {}
 
-    static createForDeploy(code: Cell, initialData: BettingConfig): BettingContract {
-        const data = beginCell()
-            .storeStringRefTail(initialData.betId)
-            .storeStringRefTail(initialData.title)
-            .storeCoins(toNano('0'))
-            .storeCoins(toNano('0'))
-            .storeCoins(toNano('0'))
-            .storeUint(initialData.expirationTime, 64)
-            .storeAddress(initialData.creatorAddress)
-            .storeStringRefTail('active')
-            .storeDict(null)
-            .storeAddress(Address.parse('UQCoiSY0kAz82hVFaeh5d8gzdRy-j1nY2nbbG4dUM5y7ph2m'))
-            .storeAddress(Address.parse('UQBY-TCqDyLeyMdv-KHcwutKQTL9SLf5ByQ24zbNZKddAphP'))
-            .endCell();
-        return new BettingContract(contractAddress(0, { code, data }), { code, data });
-    }
-
-    async sendDeploy(provider: ContractProvider, via: Sender) {
-        await provider.internal(via, {
-            value: toNano('0.05'),
-            bounce: false,
-            body: beginCell().endCell(),
-        });
-    }
-
-    async sendBet(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            amount: bigint;
-            choice: 'yes' | 'no';
-        }
-    ) {
-        await provider.internal(via, {
-            value: opts.amount,
-            bounce: true,
-            body: beginCell()
-                .storeUint(1, 32)
-                .storeStringRefTail(opts.choice)
-                .endCell()
-        });
-    }
-
-    async sendJoinBet(
-        provider: ContractProvider,
-        via: Sender,
-        opts: {
-            amount: bigint;
-            choice: 'yes' | 'no';
-        }
-    ) {
-        await provider.internal(via, {
-            value: opts.amount,
-            bounce: true,
-            body: beginCell()
-                .storeUint(3, 32)
-                .storeStringRefTail(opts.choice)
-                .storeCoins(opts.amount)
-                .endCell()
-        });
-    }
-
-    async sendResolve(
-        provider: ContractProvider,
-        via: Sender,
-        outcome: 'yes' | 'no'
-    ) {
-        await provider.internal(via, {
-            value: toNano('0.05'),
-            bounce: true,
-            body: beginCell()
-                .storeUint(2, 32)
-                .storeStringRefTail(outcome)
-                .endCell()
-        });
-    }
-
-    async getStatus(provider: ContractProvider) {
-        const { stack } = await provider.get('get_status', []);
+    async getBetInfo(provider: ContractProvider, betId: number) {
+        const { stack } = await provider.get('get_bet_info', [betId]);
         return {
-            totalAmount: stack.readBigNumber(),
-            yesAmount: stack.readBigNumber(),
-            noAmount: stack.readBigNumber(),
-            status: stack.readString(),
-            expirationTime: stack.readNumber()
+            id: stack.readNumber(),
+            totalYesAmount: stack.readBigNumber(),
+            totalNoAmount: stack.readBigNumber(),
+            endTime: stack.readNumber(),
+            isResolved: stack.readBoolean()
         };
     }
 
-    async getParticipants(provider: ContractProvider) {
-        const { stack } = await provider.get('get_participants', []);
-        return stack.readCell();
+    async getUserBetAmount(provider: ContractProvider, userAddress: Address, betId: number) {
+        const { stack } = await provider.get('get_user_bet_amount', [userAddress, betId]);
+        return {
+            yesAmount: stack.readBigNumber(),
+            noAmount: stack.readBigNumber()
+        };
     }
 }
