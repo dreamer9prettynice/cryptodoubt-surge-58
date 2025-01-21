@@ -2,11 +2,18 @@ import { useState } from 'react';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { getBettingContract, participateInBet } from '../contracts/betting';
 import { useToast } from './use-toast';
+import { createCustomProvider } from '../contracts/provider';
+import { TonClient4 } from '@ton/ton';
 
 export const useBettingContract = () => {
     const [tonConnectUI] = useTonConnectUI();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+
+    const client = new TonClient4({
+        endpoint: 'https://toncenter.com/api/v2/jsonRPC'
+    });
+    const provider = createCustomProvider(client);
 
     const createBet = async (
         title: string,

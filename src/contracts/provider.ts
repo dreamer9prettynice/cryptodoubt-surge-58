@@ -118,5 +118,10 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
                 prevLt: undefined
             } as Transaction;
         });
+    },
+
+    // Add the missing 'open' method required by ContractProvider
+    async open(): Promise<OpenedContract> {
+        throw new Error('Method not implemented');
     }
 });
