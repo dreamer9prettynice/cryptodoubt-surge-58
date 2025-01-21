@@ -40,7 +40,7 @@ export const BetParticipationModal = ({
     
     setIsSubmitting(true);
     try {
-      const result = await participateInBet(parseFloat(amount), choice as 'yes' | 'no');
+      const result = await participateInBet(1, parseFloat(amount), choice as 'yes' | 'no'); // Added betId parameter
       
       await tonConnectUI.sendTransaction({
         validUntil: Date.now() + 5 * 60 * 1000,

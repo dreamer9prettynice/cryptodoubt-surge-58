@@ -1,13 +1,11 @@
 import { 
     Address, 
     Cell,
-    Contract,
     beginCell
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
 import { BettingContract } from './BettingContract';
 import { createCustomProvider } from './provider';
-import { BetResult, BetStatus, BetInfo, UserBetAmount } from './types';
 
 const BETTING_CONTRACT_ADDRESS = 'EQCWHFymtBHttnHvFLodTNPM37EE5C2LgkDE1_2hIj-cKts';
 const MIN_BET = BigInt(100000000); // 0.1 TON
@@ -28,7 +26,7 @@ export const createBet = async (
     title: string,
     amount: number,
     expirationHours: number
-): Promise<BetResult> => {
+) => {
     if (BigInt(amount) < MIN_BET) {
         throw new Error('Minimum bet amount is 0.1 TON');
     }
@@ -36,7 +34,7 @@ export const createBet = async (
     const contract = getBettingContract();
     const message = beginCell()
         .storeUint(1, 32) // op: create bet
-        .storeRef(beginCell().storeString(title))
+        .storeRef(beginCell().storeBuffer(Buffer.from(title)).endCell())
         .storeUint(expirationHours * 3600, 64) // convert hours to seconds
         .endCell();
 
@@ -51,7 +49,11 @@ export const participateInBet = async (
     betId: number,
     amount: number,
     choice: 'yes' | 'no'
-): Promise<BetResult> => {
+): Promise<{
+    contractAddress: string;
+    amount: bigint;
+    choice: 'yes' | 'no';
+}> => {
     if (BigInt(amount) < MIN_BET) {
         throw new Error('Minimum bet amount is 0.1 TON');
     }
@@ -68,59 +70,4 @@ export const participateInBet = async (
         amount: BigInt(amount),
         choice
     };
-};
-
-export const resolveBet = async (
-    betId: number,
-    outcome: 'yes' | 'no'
-): Promise<BetResult> => {
-    const contract = getBettingContract();
-    const message = beginCell()
-        .storeUint(3, 32) // op: resolve bet
-        .storeUint(betId, 32)
-        .storeUint(outcome === 'yes' ? 1 : 0, 1)
-        .endCell();
-
-    return {
-        contractAddress: BETTING_CONTRACT_ADDRESS,
-        amount: BigInt(0)
-    };
-};
-
-export const getBetInfo = async (betId: number): Promise<BetInfo | null> => {
-    const contract = getBettingContract();
-    try {
-        const result = await contract.getBetInfo(provider, betId);
-        return {
-            id: result.id,
-            totalYesAmount: result.totalYesAmount,
-            totalNoAmount: result.totalNoAmount,
-            endTime: result.endTime,
-            isResolved: result.isResolved
-        };
-    } catch (error) {
-        console.error("Error fetching bet info:", error);
-        return null;
-    }
-};
-
-export const getUserBetAmount = async (
-    userAddress: string,
-    betId: number
-): Promise<UserBetAmount | null> => {
-    const contract = getBettingContract();
-    try {
-        const result = await contract.getUserBetAmount(
-            provider,
-            Address.parse(userAddress),
-            betId
-        );
-        return {
-            yesAmount: result.yesAmount,
-            noAmount: result.noAmount
-        };
-    } catch (error) {
-        console.error("Error fetching user bet amount:", error);
-        return null;
-    }
 };

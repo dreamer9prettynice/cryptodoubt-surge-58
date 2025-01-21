@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { getBettingContract, participateInBet, getBetStatus } from '../contracts/betting';
+import { getBettingContract, participateInBet } from '../contracts/betting';
 import { useToast } from './use-toast';
-import { toNano } from '@ton/core';
 
 export const useBettingContract = () => {
     const [tonConnectUI] = useTonConnectUI();
@@ -46,6 +45,7 @@ export const useBettingContract = () => {
     };
 
     const participate = async (
+        betId: number,
         amount: number,
         choice: 'yes' | 'no'
     ) => {
@@ -60,16 +60,14 @@ export const useBettingContract = () => {
 
         setIsLoading(true);
         try {
-            const result = await participateInBet(amount, choice);
+            const result = await participateInBet(betId, amount, choice);
             
-            // Send transaction using TonConnect
             await tonConnectUI.sendTransaction({
-                validUntil: Date.now() + 5 * 60 * 1000, // 5 minutes
+                validUntil: Date.now() + 5 * 60 * 1000,
                 messages: [
                     {
                         address: result.contractAddress,
                         amount: result.amount.toString(),
-                        payload: result.choice
                     }
                 ]
             });
@@ -92,9 +90,10 @@ export const useBettingContract = () => {
         }
     };
 
-    const getBetDetails = async () => {
+    const getBetDetails = async (betId: number) => {
         try {
-            return await getBetStatus();
+            const contract = getBettingContract();
+            return await contract.getBetInfo(provider, betId);
         } catch (error: any) {
             console.error("Error fetching bet details:", error);
             return null;

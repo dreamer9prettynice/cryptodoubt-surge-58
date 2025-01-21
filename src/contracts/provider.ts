@@ -1,7 +1,6 @@
 import { 
     Address, 
     Cell, 
-    Contract, 
     ContractProvider, 
     Sender, 
     OpenedContract,
@@ -11,14 +10,12 @@ import {
     beginCell
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
-import { Buffer } from 'buffer';
 
 export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async getState(): Promise<ContractState> {
         const block = await client.getLastBlock();
-        const contractAddress = Address.parse(process.env.BETTING_CONTRACT_ADDRESS || '');
         const state = await client.getAccount(
-            contractAddress,
+            Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
             block.last.seqno
         );
         
@@ -67,9 +64,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
 
     async get(method: string, args: any[]) {
         const block = await client.getLastBlock();
-        const contractAddress = Address.parse(process.env.BETTING_CONTRACT_ADDRESS || '');
         const result = await client.runMethod(
-            contractAddress,
+            Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
             block.last.seqno,
             method,
             args
@@ -100,10 +96,6 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         }
         
         await client.sendMessage(messageCell.toBoc());
-    },
-
-    open<T extends Contract>(contract: T): OpenedContract<T> {
-        return contract as OpenedContract<T>;
     },
 
     async getTransactions(
