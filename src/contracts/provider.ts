@@ -110,7 +110,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         limit: number = 100
     ): Promise<Transaction[]> {
         const transactions = await client.getAccountTransactions(
-            address.toString(),
+            address.toString(), // Convert Address to string for API call
             lt,
             hash.toString('base64')
         );
