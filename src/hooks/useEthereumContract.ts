@@ -1,4 +1,4 @@
-import { useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi';
+import { useContractRead, useContractWrite, useTransaction } from 'wagmi';
 import { parseEther } from 'viem';
 import { contractAbi } from '@/contracts/abi';
 
@@ -6,19 +6,16 @@ const CONTRACT_ADDRESS = 'YOUR_CONTRACT_ADDRESS';
 
 export const useEthereumContract = () => {
   const { data: bets, isLoading: isLoadingBets } = useContractRead({
-    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: contractAbi,
     functionName: 'getAllBets',
   });
 
-  const { data: createData, writeAsync: createBetAsync } = useContractWrite({
-    address: CONTRACT_ADDRESS as `0x${string}`,
+  const { write: createBet } = useContractWrite({
     abi: contractAbi,
     functionName: 'createBet',
   });
 
-  const { data: participateData, writeAsync: participateInBetAsync } = useContractWrite({
-    address: CONTRACT_ADDRESS as `0x${string}`,
+  const { write: participateInBet } = useContractWrite({
     abi: contractAbi,
     functionName: 'participateInBet',
   });
@@ -29,7 +26,7 @@ export const useEthereumContract = () => {
     expirationHours: number
   ) => {
     try {
-      const tx = await createBetAsync({
+      const tx = await createBet({
         args: [title, parseEther(amount.toString()), BigInt(expirationHours * 3600)],
       });
       return tx;
@@ -45,7 +42,7 @@ export const useEthereumContract = () => {
     amount: number
   ) => {
     try {
-      const tx = await participateInBetAsync({
+      const tx = await participateInBet({
         args: [BigInt(betId), choice, parseEther(amount.toString())],
       });
       return tx;

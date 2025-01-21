@@ -23,8 +23,7 @@ const config = createConfig({
   transports: {
     [mainnet.id]: http(),
     [arbitrum.id]: http(),
-  },
-  metadata,
+  }
 });
 
 createWeb3Modal({
