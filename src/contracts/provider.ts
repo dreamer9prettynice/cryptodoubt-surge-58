@@ -7,7 +7,8 @@ import {
     ContractState,
     SendMode,
     Transaction,
-    beginCell
+    beginCell,
+    Contract
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
 
@@ -15,7 +16,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async getState(): Promise<ContractState> {
         const block = await client.getLastBlock();
         const state = await client.getAccount(
-            Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
+            process.env.BETTING_CONTRACT_ADDRESS || '',
             block.last.seqno
         );
         
@@ -65,7 +66,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async get(method: string, args: any[]) {
         const block = await client.getLastBlock();
         const result = await client.runMethod(
-            Address.parse(process.env.BETTING_CONTRACT_ADDRESS || ''),
+            process.env.BETTING_CONTRACT_ADDRESS || '',
             block.last.seqno,
             method,
             args
@@ -105,7 +106,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         limit: number = 100
     ): Promise<Transaction[]> {
         const transactions = await client.getAccountTransactions(
-            address,
+            address.toString(),
             lt,
             hash.toString('base64')
         );
@@ -120,8 +121,15 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         });
     },
 
-    // Add the missing 'open' method required by ContractProvider
-    async open(): Promise<OpenedContract> {
-        throw new Error('Method not implemented');
+    async open<T extends Contract>(contract: T): Promise<OpenedContract<T>> {
+        const state = await this.getState();
+        return {
+            address: contract.address,
+            init: state.state,
+            balance: state.balance,
+            get: this.get.bind(this),
+            external: this.external.bind(this),
+            internal: this.internal.bind(this)
+        } as OpenedContract<T>;
     }
 });

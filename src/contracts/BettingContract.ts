@@ -18,7 +18,7 @@ export class BettingContract implements Contract {
 
     async getUserBetAmount(provider: ContractProvider, userAddress: Address, betId: number) {
         const { stack } = await provider.get('get_user_bet_amount', [
-            { type: 'slice', cell: userAddress.toCell() },
+            { type: 'slice', cell: userAddress.toString() },
             { type: 'int', value: BigInt(betId) }
         ]);
         return {
