@@ -1,4 +1,4 @@
-import { Address, Contract, ContractProvider, TupleReader } from '@ton/core';
+import { Address, Contract, ContractProvider, TupleReader, beginCell } from '@ton/core';
 
 export class BettingContract implements Contract {
     constructor(readonly address: Address) {}
@@ -18,7 +18,7 @@ export class BettingContract implements Contract {
 
     async getUserBetAmount(provider: ContractProvider, userAddress: Address, betId: number) {
         const { stack } = await provider.get('get_user_bet_amount', [
-            { type: 'slice', cell: userAddress.toString() },
+            { type: 'slice', cell: beginCell().storeAddress(userAddress).endCell() },
             { type: 'int', value: BigInt(betId) }
         ]);
         return {

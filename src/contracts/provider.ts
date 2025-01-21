@@ -15,8 +15,9 @@ import { TonClient4 } from '@ton/ton';
 export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async getState(): Promise<ContractState> {
         const block = await client.getLastBlock();
+        const contractAddress = process.env.BETTING_CONTRACT_ADDRESS || '';
         const state = await client.getAccount(
-            process.env.BETTING_CONTRACT_ADDRESS || '',
+            contractAddress,
             block.last.seqno
         );
         
@@ -65,8 +66,9 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
 
     async get(method: string, args: any[]) {
         const block = await client.getLastBlock();
+        const contractAddress = process.env.BETTING_CONTRACT_ADDRESS || '';
         const result = await client.runMethod(
-            process.env.BETTING_CONTRACT_ADDRESS || '',
+            contractAddress,
             block.last.seqno,
             method,
             args
@@ -121,12 +123,11 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         });
     },
 
-    async open<T extends Contract>(contract: T): Promise<OpenedContract<T>> {
-        const state = await this.getState();
+    open<T extends Contract>(contract: T): OpenedContract<T> {
         return {
             address: contract.address,
-            init: state.state,
-            balance: state.balance,
+            init: undefined,
+            balance: BigInt(0),
             get: this.get.bind(this),
             external: this.external.bind(this),
             internal: this.internal.bind(this)
