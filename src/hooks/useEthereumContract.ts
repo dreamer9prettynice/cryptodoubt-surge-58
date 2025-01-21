@@ -1,4 +1,4 @@
-import { useContractRead, useContractWrite, useTransaction } from 'wagmi';
+import { useContractRead, useContractWrite } from 'wagmi';
 import { parseEther } from 'viem';
 import { contractAbi } from '@/contracts/abi';
 
@@ -6,16 +6,19 @@ const CONTRACT_ADDRESS = 'YOUR_CONTRACT_ADDRESS';
 
 export const useEthereumContract = () => {
   const { data: bets, isLoading: isLoadingBets } = useContractRead({
+    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: contractAbi,
     functionName: 'getAllBets',
   });
 
-  const { write: createBet } = useContractWrite({
+  const { writeAsync: createBet } = useContractWrite({
+    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: contractAbi,
     functionName: 'createBet',
   });
 
-  const { write: participateInBet } = useContractWrite({
+  const { writeAsync: participateInBet } = useContractWrite({
+    address: CONTRACT_ADDRESS as `0x${string}`,
     abi: contractAbi,
     functionName: 'participateInBet',
   });
