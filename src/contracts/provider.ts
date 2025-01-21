@@ -19,7 +19,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const parsedAddress = Address.parse(contractAddress);
         const state = await client.getAccount(
             parsedAddress.toString(),
-            block.last.seqno // seqno is already a number in TonClient4
+            Number(block.last.seqno) // Convert seqno to number
         );
         
         if (!state.account.state) {
@@ -71,7 +71,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const parsedAddress = Address.parse(contractAddress);
         const result = await client.runMethod(
             parsedAddress.toString(),
-            block.last.seqno, // seqno is already a number in TonClient4
+            Number(block.last.seqno), // Convert seqno to number
             method,
             args
         );
@@ -110,7 +110,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         limit: number = 100
     ): Promise<Transaction[]> {
         const transactions = await client.getAccountTransactions(
-            address.toString(),
+            address.toString(), // Convert Address to string for API call
             lt,
             hash.toString('base64')
         );
