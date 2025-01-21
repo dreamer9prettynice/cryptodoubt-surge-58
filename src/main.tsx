@@ -18,16 +18,21 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 };
 
-const chains = [mainnet, arbitrum];
 const config = createConfig({
-  chains,
+  chains: [mainnet, arbitrum],
   transports: {
     [mainnet.id]: http(),
     [arbitrum.id]: http(),
   },
+  metadata,
 });
 
-createWeb3Modal({ wagmiConfig: config, projectId, chains });
+createWeb3Modal({
+  wagmiConfig: config,
+  projectId,
+  themeMode: 'dark',
+  defaultChain: mainnet,
+});
 
 const queryClient = new QueryClient();
 

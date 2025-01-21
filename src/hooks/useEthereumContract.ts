@@ -1,4 +1,4 @@
-import { useContractRead, useContractWrite } from 'wagmi';
+import { useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi';
 import { parseEther } from 'viem';
 import { contractAbi } from '@/contracts/abi';
 
@@ -6,20 +6,20 @@ const CONTRACT_ADDRESS = 'YOUR_CONTRACT_ADDRESS';
 
 export const useEthereumContract = () => {
   const { data: bets, isLoading: isLoadingBets } = useContractRead({
-    abi: contractAbi,
     address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: contractAbi,
     functionName: 'getAllBets',
   });
 
-  const { write: createBet } = useContractWrite({
-    abi: contractAbi,
+  const { data: createData, writeAsync: createBetAsync } = useContractWrite({
     address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: contractAbi,
     functionName: 'createBet',
   });
 
-  const { write: participateInBet } = useContractWrite({
-    abi: contractAbi,
+  const { data: participateData, writeAsync: participateInBetAsync } = useContractWrite({
     address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: contractAbi,
     functionName: 'participateInBet',
   });
 
@@ -29,9 +29,10 @@ export const useEthereumContract = () => {
     expirationHours: number
   ) => {
     try {
-      await createBet({
+      const tx = await createBetAsync({
         args: [title, parseEther(amount.toString()), BigInt(expirationHours * 3600)],
       });
+      return tx;
     } catch (error) {
       console.error('Error creating bet:', error);
       throw error;
@@ -44,9 +45,10 @@ export const useEthereumContract = () => {
     amount: number
   ) => {
     try {
-      await participateInBet({
+      const tx = await participateInBetAsync({
         args: [BigInt(betId), choice, parseEther(amount.toString())],
       });
+      return tx;
     } catch (error) {
       console.error('Error participating in bet:', error);
       throw error;
