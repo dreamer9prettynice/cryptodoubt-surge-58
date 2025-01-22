@@ -1,6 +1,7 @@
 import { 
     Address, 
-    beginCell
+    beginCell,
+    Cell
 } from '@ton/core';
 import { TonClient4 } from '@ton/ton';
 import { BettingContract } from './BettingContract';
@@ -18,11 +19,18 @@ export const getBettingContract = () => {
     );
 };
 
+interface BetResult {
+    to: string;
+    amount: bigint;
+    payload: Cell;
+    contractAddress: string; // Added for compatibility
+}
+
 export const createBet = async (
     title: string,
     amount: number,
     expirationHours: number
-) => {
+): Promise<BetResult> => {
     if (BigInt(amount) < MIN_BET) {
         throw new Error('Minimum bet amount is 0.1 TON');
     }
@@ -36,7 +44,8 @@ export const createBet = async (
     return {
         to: BETTING_CONTRACT_ADDRESS,
         amount: BigInt(amount),
-        payload: message
+        payload: message,
+        contractAddress: BETTING_CONTRACT_ADDRESS
     };
 };
 
@@ -44,7 +53,7 @@ export const participateInBet = async (
     betId: number,
     amount: number,
     choice: 'yes' | 'no'
-) => {
+): Promise<BetResult> => {
     if (BigInt(amount) < MIN_BET) {
         throw new Error('Minimum bet amount is 0.1 TON');
     }
@@ -58,6 +67,7 @@ export const participateInBet = async (
     return {
         to: BETTING_CONTRACT_ADDRESS,
         amount: BigInt(amount),
-        payload: message
+        payload: message,
+        contractAddress: BETTING_CONTRACT_ADDRESS
     };
 };

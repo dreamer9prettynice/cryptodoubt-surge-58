@@ -15,11 +15,11 @@ import { TonClient4 } from '@ton/ton';
 export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     async getState(): Promise<ContractState> {
         const block = await client.getLastBlock();
-        const contractAddress = process.env.BETTING_CONTRACT_ADDRESS || '';
+        const contractAddress = process.env.REACT_APP_BETTING_CONTRACT_ADDRESS || '';
         const parsedAddress = Address.parse(contractAddress);
         const state = await client.getAccount(
-            parsedAddress.toString(),
-            Number(block.last.seqno) // Convert seqno to number
+            parsedAddress,
+            block.last.seqno
         );
         
         if (!state.account.state) {
@@ -67,11 +67,11 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
 
     async get(method: string, args: any[]) {
         const block = await client.getLastBlock();
-        const contractAddress = process.env.BETTING_CONTRACT_ADDRESS || '';
+        const contractAddress = process.env.REACT_APP_BETTING_CONTRACT_ADDRESS || '';
         const parsedAddress = Address.parse(contractAddress);
         const result = await client.runMethod(
-            parsedAddress.toString(),
-            Number(block.last.seqno), // Convert seqno to number
+            parsedAddress,
+            block.last.seqno,
             method,
             args
         );
@@ -110,7 +110,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         limit: number = 100
     ): Promise<Transaction[]> {
         const transactions = await client.getAccountTransactions(
-            address.toString(), // Convert Address to string for API call
+            address,
             lt,
             hash.toString('base64')
         );
