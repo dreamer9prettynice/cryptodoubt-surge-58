@@ -44,7 +44,7 @@ export const useBettingContract = () => {
                     {
                         address: betData.to,
                         amount: betData.amount.toString(),
-                        payload: betData.payload
+                        payload: betData.payload.toBoc().toString('base64')
                     }
                 ]
             });
@@ -91,7 +91,7 @@ export const useBettingContract = () => {
                     {
                         address: participationData.to,
                         amount: participationData.amount.toString(),
-                        payload: participationData.payload
+                        payload: participationData.payload.toBoc().toString('base64')
                     }
                 ]
             });
