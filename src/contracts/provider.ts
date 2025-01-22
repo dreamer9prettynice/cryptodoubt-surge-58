@@ -71,7 +71,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const parsedAddress = Address.parse(contractAddress);
         const result = await client.runMethod(
             parsedAddress.toString(),
-            Number(block.last.seqno),
+            block.last.seqno,
             method,
             args
         );
@@ -110,7 +110,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     ): Promise<Transaction[]> {
         const transactions = await client.getAccountTransactions(
             address.toString(),
-            Number(lt),
+            lt.toString(),
             hash.toString('base64')
         );
         
