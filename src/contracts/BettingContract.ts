@@ -26,4 +26,12 @@ export class BettingContract implements Contract {
             noAmount: stack.readBigNumber()
         };
     }
+
+    // Add USDT specific methods
+    async getUSDTBalance(provider: ContractProvider, userAddress: Address) {
+        const { stack } = await provider.get('get_usdt_balance', [
+            { type: 'slice', cell: beginCell().storeAddress(userAddress).endCell() }
+        ]);
+        return stack.readBigNumber();
+    }
 }
