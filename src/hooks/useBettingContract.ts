@@ -1,21 +1,26 @@
 import { useState } from 'react';
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { getBettingContract, participateInBet } from '../contracts/betting';
+import { createBet, participateInBet } from '../contracts/betting';
 import { useToast } from './use-toast';
-import { createCustomProvider } from '../contracts/provider';
-import { TonClient4 } from '@ton/ton';
 
 export const useBettingContract = () => {
     const [tonConnectUI] = useTonConnectUI();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
-    const client = new TonClient4({
-        endpoint: 'https://toncenter.com/api/v2/jsonRPC'
-    });
-    const provider = createCustomProvider(client);
+    const connectWallet = async () => {
+        try {
+            await tonConnectUI.connectWallet();
+        } catch (error: any) {
+            toast({
+                title: "Connection Failed",
+                description: error.message || "Failed to connect wallet",
+                variant: "destructive"
+            });
+        }
+    };
 
-    const createBet = async (
+    const createNewBet = async (
         title: string,
         amount: number,
         expirationHours: number
@@ -31,17 +36,28 @@ export const useBettingContract = () => {
 
         setIsLoading(true);
         try {
-            const contract = getBettingContract();
+            const betData = await createBet(title, amount, expirationHours);
+            
+            await tonConnectUI.sendTransaction({
+                validUntil: Date.now() + 5 * 60 * 1000,
+                messages: [
+                    {
+                        address: betData.to,
+                        amount: betData.amount.toString(),
+                        payload: betData.payload
+                    }
+                ]
+            });
             
             toast({
-                title: "Bet created",
+                title: "Success",
                 description: "Your bet has been created successfully"
             });
 
-            return contract;
+            return betData;
         } catch (error: any) {
             toast({
-                title: "Error creating bet",
+                title: "Error",
                 description: error.message || "Failed to create bet",
                 variant: "destructive"
             });
@@ -67,27 +83,28 @@ export const useBettingContract = () => {
 
         setIsLoading(true);
         try {
-            const result = await participateInBet(betId, amount, choice);
+            const participationData = await participateInBet(betId, amount, choice);
             
             await tonConnectUI.sendTransaction({
                 validUntil: Date.now() + 5 * 60 * 1000,
                 messages: [
                     {
-                        address: result.contractAddress,
-                        amount: result.amount.toString(),
+                        address: participationData.to,
+                        amount: participationData.amount.toString(),
+                        payload: participationData.payload
                     }
                 ]
             });
             
             toast({
-                title: "Participation successful",
+                title: "Success",
                 description: "You have successfully participated in the bet"
             });
             
             return true;
         } catch (error: any) {
             toast({
-                title: "Error participating",
+                title: "Error",
                 description: error.message || "Failed to participate in bet",
                 variant: "destructive"
             });
@@ -97,20 +114,11 @@ export const useBettingContract = () => {
         }
     };
 
-    const getBetDetails = async (betId: number) => {
-        try {
-            const contract = getBettingContract();
-            return await contract.getBetInfo(provider, betId);
-        } catch (error: any) {
-            console.error("Error fetching bet details:", error);
-            return null;
-        }
-    };
-
     return {
-        createBet,
+        connectWallet,
+        createNewBet,
         participate,
-        getBetDetails,
-        isLoading
+        isLoading,
+        isConnected: tonConnectUI.connected
     };
 };
