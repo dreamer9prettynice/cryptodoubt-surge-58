@@ -20,6 +20,39 @@ export const useBettingContract = () => {
         }
     };
 
+    const handleTransaction = async (transactionData: {
+        to: string;
+        amount: bigint;
+        payload: any;
+    }) => {
+        try {
+            const result = await tonConnectUI.sendTransaction({
+                validUntil: Date.now() + 5 * 60 * 1000, // 5 minutes
+                messages: [
+                    {
+                        address: transactionData.to,
+                        amount: transactionData.amount.toString(),
+                        payload: transactionData.payload.toBoc().toString('base64')
+                    }
+                ]
+            });
+
+            if (!result) {
+                throw new Error("Transaction was rejected or failed");
+            }
+
+            return result;
+        } catch (error: any) {
+            if (error.message?.includes("User rejected")) {
+                throw new Error("Transaction was cancelled by user");
+            } else if (error.message?.includes("Operation aborted")) {
+                throw new Error("Connection to wallet was lost. Please try again");
+            } else {
+                throw new Error(error.message || "Transaction failed");
+            }
+        }
+    };
+
     const createNewBet = async (
         title: string,
         amount: number,
@@ -38,15 +71,10 @@ export const useBettingContract = () => {
         try {
             const betData = await createBet(title, amount, expirationHours);
             
-            await tonConnectUI.sendTransaction({
-                validUntil: Date.now() + 5 * 60 * 1000,
-                messages: [
-                    {
-                        address: betData.to,
-                        amount: betData.amount.toString(),
-                        payload: betData.payload.toBoc().toString('base64')
-                    }
-                ]
+            await handleTransaction({
+                to: betData.contractAddress,
+                amount: betData.amount,
+                payload: betData.payload
             });
             
             toast({
@@ -85,15 +113,10 @@ export const useBettingContract = () => {
         try {
             const participationData = await participateInBet(betId, amount, choice);
             
-            await tonConnectUI.sendTransaction({
-                validUntil: Date.now() + 5 * 60 * 1000,
-                messages: [
-                    {
-                        address: participationData.to,
-                        amount: participationData.amount.toString(),
-                        payload: participationData.payload.toBoc().toString('base64')
-                    }
-                ]
+            await handleTransaction({
+                to: participationData.contractAddress,
+                amount: participationData.amount,
+                payload: participationData.payload
             });
             
             toast({
