@@ -19,7 +19,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const parsedAddress = Address.parse(contractAddress);
         const state = await client.getAccount(
             parsedAddress.toString(),
-            block.last.seqno // Already a number from TonClient4
+            block.last.seqno
         );
         
         if (!state.account.state) {
@@ -71,7 +71,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const parsedAddress = Address.parse(contractAddress);
         const result = await client.runMethod(
             parsedAddress.toString(),
-            block.last.seqno, // Already a number from TonClient4
+            block.last.seqno,
             method,
             args
         );
