@@ -20,8 +20,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         console.log('Getting state for contract:', parsedAddress.toString());
         
         const state = await client.getAccount(
-            parsedAddress.toString(),
-            block.last.seqno // Already a number, no conversion needed
+            parsedAddress,
+            block.last.seqno
         );
         
         if (!state.account.state) {
@@ -74,8 +74,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         console.log('Running method:', method, 'with args:', args);
         
         const result = await client.runMethod(
-            parsedAddress.toString(),
-            block.last.seqno, // Already a number, no conversion needed
+            parsedAddress,
+            block.last.seqno,
             method,
             args
         );
@@ -116,9 +116,9 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     ): Promise<Transaction[]> {
         console.log('Getting transactions for address:', address.toString());
         const transactions = await client.getAccountTransactions(
-            address.toString(),
-            Number(lt), // Convert bigint to number as required by TonClient4
-            hash // Pass Buffer directly
+            address,
+            Number(lt),
+            hash
         );
         
         return transactions.map(transaction => {
