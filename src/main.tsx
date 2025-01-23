@@ -10,7 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
     <BrowserRouter>
-      <TonConnectUIProvider manifestUrl="https://violet-traditional-rabbit-103.mypinata.cloud/ipfs/QmQJJAdZ2qSwdepvb5evJq7soEBueFenHLX3PoM6tiBffm">
+      <TonConnectUIProvider manifestUrl="/tonconnect-manifest.json">
         <App />
       </TonConnectUIProvider>
     </BrowserRouter>
