@@ -117,7 +117,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         console.log('Getting transactions for address:', address.toString());
         const transactions = await client.getAccountTransactions(
             address, // TonClient4 accepts Address type directly
-            lt.toString(),
+            lt, // Pass bigint directly
             hash.toString('base64')
         );
         
