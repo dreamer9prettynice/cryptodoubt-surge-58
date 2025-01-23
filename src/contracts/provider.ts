@@ -17,9 +17,11 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const block = await client.getLastBlock();
         const contractAddress = process.env.REACT_APP_BETTING_CONTRACT_ADDRESS || '';
         const parsedAddress = Address.parse(contractAddress);
+        console.log('Getting state for contract:', parsedAddress.toString());
+        
         const state = await client.getAccount(
             parsedAddress.toString(),
-            Number(block.last.seqno)
+            Number(block.last.seqno) // Convert seqno to number
         );
         
         if (!state.account.state) {
@@ -69,9 +71,11 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const block = await client.getLastBlock();
         const contractAddress = process.env.REACT_APP_BETTING_CONTRACT_ADDRESS || '';
         const parsedAddress = Address.parse(contractAddress);
+        console.log('Running method:', method, 'with args:', args);
+        
         const result = await client.runMethod(
             parsedAddress.toString(),
-            Number(block.last.seqno),
+            Number(block.last.seqno), // Convert seqno to number
             method,
             args
         );
@@ -79,6 +83,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     },
 
     async external(message: Cell) {
+        console.log('Sending external message');
         await client.sendMessage(message.toBoc());
     },
 
@@ -100,6 +105,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
             messageCell = beginCell().endCell();
         }
         
+        console.log('Sending internal message');
         await client.sendMessage(messageCell.toBoc());
     },
 
@@ -108,6 +114,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         lt: bigint,
         hash: Buffer
     ): Promise<Transaction[]> {
+        console.log('Getting transactions for address:', address.toString());
         const transactions = await client.getAccountTransactions(
             address.toString(),
             lt.toString(),
