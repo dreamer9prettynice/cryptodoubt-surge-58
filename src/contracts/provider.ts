@@ -44,8 +44,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
                 },
                 state: {
                     type: 'active',
-                    code: Buffer.from(state.account.state.code || '', 'base64'),
-                    data: Buffer.from(state.account.state.data || '', 'base64')
+                    code: Cell.fromBoc(Buffer.from(state.account.state.code || '', 'base64'))[0],
+                    data: Cell.fromBoc(Buffer.from(state.account.state.data || '', 'base64'))[0]
                 }
             };
         }
