@@ -21,7 +21,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         
         const state = await client.getAccount(
             parsedAddress.toString(),
-            block.last.seqno
+            Number(block.last.seqno)
         );
         
         if (!state.account.state) {
@@ -36,8 +36,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         }
 
         if (state.account.state.type === 'active') {
-            const code = Cell.fromBoc(Buffer.from(state.account.state.code || '', 'base64'))[0];
-            const data = Cell.fromBoc(Buffer.from(state.account.state.data || '', 'base64'))[0];
+            const codeBuffer = Buffer.from(state.account.state.code || '', 'base64');
+            const dataBuffer = Buffer.from(state.account.state.data || '', 'base64');
             
             return {
                 balance: BigInt(state.account.balance.coins),
@@ -47,8 +47,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
                 },
                 state: {
                     type: 'active',
-                    code,
-                    data
+                    code: Cell.fromBoc(codeBuffer)[0],
+                    data: Cell.fromBoc(dataBuffer)[0]
                 }
             };
         }
@@ -78,7 +78,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         
         const result = await client.runMethod(
             parsedAddress.toString(),
-            block.last.seqno,
+            Number(block.last.seqno),
             method,
             args
         );
@@ -120,7 +120,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         console.log('Getting transactions for address:', address.toString());
         const transactions = await client.getAccountTransactions(
             address.toString(),
-            BigInt(lt),
+            lt,
             hash
         );
         
