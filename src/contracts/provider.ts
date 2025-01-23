@@ -19,7 +19,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         const parsedAddress = Address.parse(contractAddress);
         const state = await client.getAccount(
             parsedAddress.toString(),
-            block.last.seqno
+            Number(block.last.seqno)
         );
         
         if (!state.account.state) {
