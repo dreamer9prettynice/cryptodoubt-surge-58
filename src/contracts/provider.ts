@@ -21,7 +21,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         
         const state = await client.getAccount(
             parsedAddress.toString(),
-            parseInt(block.last.seqno.toString())
+            Number(block.last.seqno)
         );
         
         if (!state.account.state) {
@@ -38,8 +38,12 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         if (state.account.state.type === 'active') {
             const codeBuffer = Buffer.from(state.account.state.code || '', 'base64');
             const dataBuffer = Buffer.from(state.account.state.data || '', 'base64');
+            
+            // Convert Cell to Buffer for code and data
             const codeCell = Cell.fromBoc(codeBuffer)[0];
             const dataCell = Cell.fromBoc(dataBuffer)[0];
+            const codeBuf = Buffer.from(codeCell.toBoc());
+            const dataBuf = Buffer.from(dataCell.toBoc());
             
             return {
                 balance: BigInt(state.account.balance.coins),
@@ -49,8 +53,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
                 },
                 state: {
                     type: 'active',
-                    code: codeCell,
-                    data: dataCell
+                    code: codeBuf,
+                    data: dataBuf
                 }
             };
         }
@@ -80,7 +84,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         
         const result = await client.runMethod(
             parsedAddress.toString(),
-            parseInt(block.last.seqno.toString()),
+            Number(block.last.seqno),
             method,
             args
         );
