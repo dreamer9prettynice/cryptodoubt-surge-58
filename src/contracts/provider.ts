@@ -20,7 +20,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         console.log('Getting state for contract:', parsedAddress.toString());
         
         const state = await client.getAccount(
-            parsedAddress,
+            parsedAddress.toString(),
             block.last.seqno
         );
         
@@ -36,6 +36,9 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         }
 
         if (state.account.state.type === 'active') {
+            const code = Cell.fromBoc(Buffer.from(state.account.state.code || '', 'base64'))[0];
+            const data = Cell.fromBoc(Buffer.from(state.account.state.data || '', 'base64'))[0];
+            
             return {
                 balance: BigInt(state.account.balance.coins),
                 last: {
@@ -44,8 +47,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
                 },
                 state: {
                     type: 'active',
-                    code: Cell.fromBoc(Buffer.from(state.account.state.code || '', 'base64'))[0],
-                    data: Cell.fromBoc(Buffer.from(state.account.state.data || '', 'base64'))[0]
+                    code,
+                    data
                 }
             };
         }
@@ -74,7 +77,7 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
         console.log('Running method:', method, 'with args:', args);
         
         const result = await client.runMethod(
-            parsedAddress,
+            parsedAddress.toString(),
             block.last.seqno,
             method,
             args
@@ -116,8 +119,8 @@ export const createCustomProvider = (client: TonClient4): ContractProvider => ({
     ): Promise<Transaction[]> {
         console.log('Getting transactions for address:', address.toString());
         const transactions = await client.getAccountTransactions(
-            address,
-            Number(lt),
+            address.toString(),
+            BigInt(lt),
             hash
         );
         
